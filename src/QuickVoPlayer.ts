@@ -60,6 +60,7 @@ const parseSEI = (payload: Uint8Array) => {
 }
 
 export class QuickVoPlayer extends PrWebCodecsPlayer {
+  // cutRenderWorker = new RenderWorker()
   constructor() {
     super()
   }
@@ -76,8 +77,9 @@ export class QuickVoPlayer extends PrWebCodecsPlayer {
         // @ts-ignore
         const { id, videos = [] } = user
         for (const video of videos) {
-          // const { x, y, width, height } = video
+          const { x, y, width, height } = video
           // this.addCut(id, x, y, width, height)
+          this.renderWorker.setCut({ sx: x, sy: y, sw: width, sh: height })
         }
       }
     }
