@@ -1,5 +1,6 @@
-import { PrWebCodecsPlayer } from 'pr-web-codecs-player'
+// import { PrWebCodecsPlayer } from 'pr-web-codecs-player'
 import * as protos from './protos/index'
+import { PrWebCodecsPlayer } from './PrWebCodecsPlayer'
 
 // 解析自定义SEI信息
 const parseSEI = (payload: Uint8Array) => {
@@ -60,7 +61,12 @@ const parseSEI = (payload: Uint8Array) => {
 }
 
 export class QuickVoPlayer extends PrWebCodecsPlayer {
-  // cutRenderWorker = new RenderWorker()
+  customRenders = new Map()
+
+  cuts: string[] = []
+
+  onCutStream = (id: string, stream: MediaStream) => {}
+
   constructor() {
     super()
   }
@@ -78,8 +84,14 @@ export class QuickVoPlayer extends PrWebCodecsPlayer {
         const { id, videos = [] } = user
         for (const video of videos) {
           const { x, y, width, height } = video
-          // this.addCut(id, x, y, width, height)
-          this.renderWorker.setCut({ sx: x, sy: y, sw: width, sh: height })
+          if (!this.cuts.includes(id)) {
+            console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: video`, video)
+            this.cuts.push(id)
+            const canvas = document.createElement('canvas')
+            this.createCut(id, { sx: x, sy: y, sw: width, sh: height }, canvas)
+            const stream = canvas.captureStream(25)
+            this.onCutStream(id, stream)
+          }
         }
       }
     }

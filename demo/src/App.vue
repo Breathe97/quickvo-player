@@ -33,22 +33,20 @@ const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc
 
 const player = new QuickVoPlayer()
 
-// player.onCut = async (key, stream, width, heiht) => {
-//   console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: stream`, stream)
-//   await nextTick()
-//   const video_view = document.querySelector('#video-view-cut')
-//   if (!video_view) return
+player.onCutStream = async (id, stream) => {
+  const video_view = document.querySelector('#video-view-cut')
+  if (!video_view) return
 
-//   const video_dom = document.createElement('video')
-//   video_dom.style.width = '100%'
-//   video_dom.style.height = '100%'
-//   video_view.replaceChildren(video_dom)
+  const video_dom = document.createElement('video')
+  video_dom.style.width = '100%'
+  video_dom.style.height = '100%'
+  video_view.replaceChildren(video_dom)
 
-//   video_dom.srcObject = stream
-//   video_dom?.load()
-//   await nextTick()
-//   video_dom?.play()
-// }
+  video_dom.srcObject = stream
+  video_dom?.load()
+  await nextTick()
+  video_dom?.play()
+}
 
 const init = async () => {
   await nextTick()
@@ -78,7 +76,7 @@ const init = async () => {
 }
 
 const changeUrl = () => {
-  url.value = 'https://stream.quickvo.live/stream_1234567890/1759226242109.flv?auth_key=1759312642-0-0-b227c4a34832ccbaeb762394c6f6ad61'
+  url.value = 'https://stream.quickvo.live/stream_5056569716/1759991932053.flv?auth_key=1760078332-0-0-9f9a77471523e2fed2f0b58fdfa0c3f5'
 }
 
 const play = async () => {

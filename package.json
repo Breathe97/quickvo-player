@@ -19,7 +19,8 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "pr-web-codecs-player": "^0.0.5",
+    "pr-fetch": "^0.0.1",
+    "pr-web-codecs-player": "^0.0.7",
     "protobufjs": "^7.5.4"
   },
   "devDependencies": {
