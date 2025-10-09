@@ -27,13 +27,13 @@ export class Decoder {
     const { config, supported = false } = await AudioDecoder.isConfigSupported(this.audioDecoderConfig)
     console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: supported`, supported)
     if (supported && config) {
-      this.audioDecoder.configure(config)
+      // this.audioDecoder.configure(config)
     }
   }
 
-  initVideo = (config: VideoDecoderConfig) => {
+  initVideo = async (_config: VideoDecoderConfig) => {
     this.destroy(['video'])
-    this.videoDecoderConfig = { ...config }
+    this.videoDecoderConfig = { ..._config }
     this.videoDecoder = new VideoDecoder({
       output: async (frame: VideoFrame) => {
         const img = await createImageBitmap(frame)
@@ -49,7 +49,10 @@ export class Decoder {
         this.onError && this.onError(e)
       }
     })
-    this.videoDecoder.configure(this.videoDecoderConfig)
+    const { config, supported = false } = await VideoDecoder.isConfigSupported(this.videoDecoderConfig)
+    if (supported && config) {
+      this.videoDecoder.configure(config)
+    }
   }
 
   decodeAudio = async (init: EncodedAudioChunkInit) => {

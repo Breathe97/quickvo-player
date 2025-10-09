@@ -55,8 +55,8 @@ export class PrWebCodecsPlayer {
           const { accPacketType, frameType, data, nalus = [] } = body
           if (accPacketType === 0) {
             console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
-            const { codec = '', data: description, sampleRate, soundSize } = body
-            const config: AudioDecoderConfig = { codec, description, sampleRate, numberOfChannels: soundSize }
+            const { codec = '', data: description, sampleRate, channels } = body
+            const config: AudioDecoderConfig = { codec, description, sampleRate, numberOfChannels: channels }
             console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: config`, config)
             this.decoderWorker.initAudio(config)
           }
