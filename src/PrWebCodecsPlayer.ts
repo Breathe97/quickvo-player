@@ -22,7 +22,19 @@ export class PrWebCodecsPlayer {
 
   onSEI = (_payload: Uint8Array) => {}
 
-  constructor() {}
+  constructor() {
+    this.decoderWorker.onDecode = (e) => {
+      this.renderWorker.push(e)
+      const keys = [...this.cutRenderWorker.keys()]
+      for (const key of keys) {
+        this.cutRenderWorker.get(key).push(e)
+      }
+    }
+    this.decoderWorker.onError = (e) => {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.onError: e`, e)
+      this.stop()
+    }
+  }
 
   /**
    * 监听媒体 tag
@@ -30,6 +42,7 @@ export class PrWebCodecsPlayer {
   onTag = (e: any) => {
     const { header, body } = e
     const { tagType, timestamp } = header
+    // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: ${tagType}`, e)
     switch (tagType) {
       case 'script':
         {
@@ -37,16 +50,28 @@ export class PrWebCodecsPlayer {
           this.initRender({ width, height })
         }
         break
+      case 'audio':
+        {
+          const { accPacketType, frameType, data, nalus = [] } = body
+          if (accPacketType === 0) {
+            console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
+            const { codec = '', data: description, sampleRate, soundSize } = body
+            const config: AudioDecoderConfig = { codec, description, sampleRate, numberOfChannels: soundSize }
+            console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: config`, config)
+            this.decoderWorker.initAudio(config)
+          }
+        }
+        break
       case 'video':
         {
           const { avcPacketType, frameType, data, nalus = [] } = body
           if (avcPacketType === 0) {
             const { codec = '', data: description } = body
-            this.initDecoder({ codec, description })
+            this.decoderWorker.initVideo({ codec, description })
           }
           if (avcPacketType === 1) {
             const type = frameType === 1 ? 'key' : 'delta'
-            this.decoderWorker.decode({ type, timestamp, data })
+            this.decoderWorker.decodeVideo({ type, timestamp: timestamp * 1000, data })
 
             for (const nalu of nalus) {
               const { header, payload } = nalu
@@ -68,25 +93,6 @@ export class PrWebCodecsPlayer {
   initDemuxer = () => {
     this.demuxerWorker.init()
     this.demuxerWorker.onTag = this.onTag
-  }
-
-  /**
-   * 初始化解码器
-   * @param config: VideoDecoderConfig
-   */
-  initDecoder = (config: VideoDecoderConfig) => {
-    this.decoderWorker.init(config)
-    this.decoderWorker.onDecode = (e) => {
-      this.renderWorker.push(e)
-      const keys = [...this.cutRenderWorker.keys()]
-      for (const key of keys) {
-        this.cutRenderWorker.get(key).push(e)
-      }
-    }
-    this.decoderWorker.onError = (e) => {
-      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.onError: e`, e)
-      this.stop()
-    }
   }
 
   /**

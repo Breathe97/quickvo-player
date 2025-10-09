@@ -2,7 +2,7 @@ import flvParser from './flv264Parser'
 import { Header, Tag, TagType } from './type'
 
 export class Demuxer {
-  private parseSpeed = 4
+  private parseSpeed = 8
   private parseTimer = 0
   private pushFuncs: Function[] = []
   private payload = new Uint8Array(0)
@@ -18,6 +18,7 @@ export class Demuxer {
 
   init = () => {
     this.destroy()
+    // @ts-ignore
     this.parseTimer = setInterval(this.parse, this.parseSpeed)
   }
 

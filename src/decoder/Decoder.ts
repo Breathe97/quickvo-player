@@ -1,7 +1,9 @@
 export class Decoder {
-  private config: VideoDecoderConfig | undefined
+  private audioDecoderConfig: AudioDecoderConfig | undefined
+  private audioDecoder: AudioDecoder | undefined
 
-  private decoder: VideoDecoder | undefined
+  private videoDecoderConfig: VideoDecoderConfig | undefined
+  private videoDecoder: VideoDecoder | undefined
 
   private hasKeyFrame = false
 
@@ -10,10 +12,29 @@ export class Decoder {
 
   constructor() {}
 
-  init = (config: VideoDecoderConfig) => {
-    this.destroy()
-    this.config = { ...config }
-    this.decoder = new VideoDecoder({
+  initAudio = async (_config: AudioDecoderConfig) => {
+    this.destroy(['audio'])
+    this.audioDecoderConfig = { ..._config }
+    this.audioDecoder = new AudioDecoder({
+      output: async (data: AudioData) => {
+        console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: data`, data)
+      },
+      error: (e) => {
+        this.onError && this.onError(e)
+      }
+    })
+
+    const { config, supported = false } = await AudioDecoder.isConfigSupported(this.audioDecoderConfig)
+    console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: supported`, supported)
+    if (supported && config) {
+      this.audioDecoder.configure(config)
+    }
+  }
+
+  initVideo = (config: VideoDecoderConfig) => {
+    this.destroy(['video'])
+    this.videoDecoderConfig = { ...config }
+    this.videoDecoder = new VideoDecoder({
       output: async (frame: VideoFrame) => {
         const img = await createImageBitmap(frame)
         const timestamp = frame.timestamp
@@ -28,28 +49,40 @@ export class Decoder {
         this.onError && this.onError(e)
       }
     })
-    this.decoder.configure(this.config)
+    this.videoDecoder.configure(this.videoDecoderConfig)
   }
 
-  destroy = () => {
-    this.config = undefined
-    this.decoder?.close()
-    this.decoder = undefined
-    this.hasKeyFrame = false
+  decodeAudio = async (init: EncodedAudioChunkInit) => {
+    console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: init`, init)
   }
 
-  decode = async (init: EncodedVideoChunkInit) => {
-    if (!this.decoder) return
+  decodeVideo = async (init: EncodedVideoChunkInit) => {
+    if (!this.videoDecoder) return
     if (init.type === 'key') {
       this.hasKeyFrame = true
     }
-    if (this.hasKeyFrame && this.decoder.decodeQueueSize < 2) {
+    if (this.hasKeyFrame && this.videoDecoder.decodeQueueSize < 2) {
       const chunk = new EncodedVideoChunk(init)
-      this.decoder.decode(chunk)
+      this.videoDecoder.decode(chunk)
+    }
+  }
+
+  destroy = (types: Array<'audio' | 'video'> = ['audio', 'video']) => {
+    if (types.includes('audio')) {
+      this.audioDecoderConfig = undefined
+      this.audioDecoder?.close()
+      this.audioDecoder = undefined
+    }
+
+    if (types.includes('video')) {
+      this.videoDecoderConfig = undefined
+      this.videoDecoder?.close()
+      this.videoDecoder = undefined
+      this.hasKeyFrame = false
     }
   }
 
   flush = () => {
-    this.decoder?.flush()
+    this.videoDecoder?.flush()
   }
 }

@@ -1,7 +1,7 @@
 import { Decoder } from './Decoder'
 
 interface WorkerMessage {
-  action: 'init' | 'destroy' | 'decode' | 'flush'
+  action: 'initAudio' | 'initVideo' | 'decodeAudio' | 'decodeVideo' | 'flush' | 'destroy'
   data: any
 }
 

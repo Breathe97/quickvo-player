@@ -18,19 +18,27 @@ export class DecoderWorker {
     }
   }
 
-  init = (config: VideoDecoderConfig) => {
-    this.worker.postMessage({ action: 'init', data: config })
+  initAudio = (config: AudioDecoderConfig) => {
+    this.worker.postMessage({ action: 'initAudio', data: config })
   }
 
-  destroy = () => {
-    this.worker.postMessage({ action: 'destroy' })
+  initVideo = (config: VideoDecoderConfig) => {
+    this.worker.postMessage({ action: 'initVideo', data: config })
   }
 
-  decode = async (init: EncodedVideoChunkInit) => {
-    this.worker.postMessage({ action: 'decode', data: init })
+  decodeAudio = async (init: EncodedAudioChunkInit) => {
+    this.worker.postMessage({ action: 'decodeAudio', data: init })
+  }
+
+  decodeVideo = async (init: EncodedVideoChunkInit) => {
+    this.worker.postMessage({ action: 'decodeVideo', data: init })
   }
 
   flush = () => {
     this.worker.postMessage({ action: 'flush' })
+  }
+
+  destroy = () => {
+    this.worker.postMessage({ action: 'destroy' })
   }
 }

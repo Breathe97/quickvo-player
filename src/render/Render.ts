@@ -33,6 +33,7 @@ export class Render {
 
   push = (frame: { img: ImageBitmap; timestamp: number }) => {
     this.pendingFrames.push(frame)
+    // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: this.pendingFrames`, this.pendingFrames.length)
     if (this.isRendering === false) {
       setTimeout(this.renderFrame, 0)
     }

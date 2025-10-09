@@ -1,6 +1,7 @@
 // 参考 https://www.jianshu.com/p/f667edff9748
 // 参考 https://www.cnblogs.com/yaozhongxiao/archive/2013/04/12/3016302.html
 // 参考 https://blog.csdn.net/shaosunrise/article/details/121548065
+// 参考 https://www.cnblogs.com/saysmy/p/10716886.html
 
 import { Nalu } from './type'
 
@@ -309,22 +310,34 @@ export const parseAudio = (view: DataView, offset: number, dataSize: number) => 
   let currentOffset = offset
   // [0]
   const num = view.getUint8(currentOffset)
+
   const soundFormat = (num >> 4) & 0x0f // 音频编码格式
   const soundRate = (num >> 2) & 0x03 // 采样率
   const soundSize = (num >> 1) & 0x01 // 采样位数
   const soundType = num & 0x01 // 声道模式
   currentOffset = currentOffset + 1
 
-  const data = new Uint8Array(view.buffer.slice(currentOffset, currentOffset + dataSize))
+  const dataLength = dataSize - 2
+  const data = new Uint8Array(view.buffer.slice(currentOffset, currentOffset + dataLength))
 
-  // soundFormat === 10 才存在
+  // aac
   if (soundFormat === 10) {
     // [1]
     const accPacketType = view.getUint8(currentOffset)
     currentOffset = currentOffset + 1
 
-    return { soundFormat, soundRate, soundSize, soundType, accPacketType, data }
+    if (accPacketType === 0) {
+      const codec = `mp4a.40.2`
+
+      const samplingRates = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350]
+      const sampleRate = samplingRates[soundRate]
+
+      const channels = soundType + 1
+
+      return { soundFormat, soundRate, soundSize, soundType, data, accPacketType, codec, sampleRate, channels }
+    }
   }
+
   return { soundFormat, soundRate, soundSize, soundType, data }
 }
 
