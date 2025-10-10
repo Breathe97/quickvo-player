@@ -23,17 +23,12 @@ export class PrWebCodecsPlayer {
   onSEI = (_payload: Uint8Array) => {}
 
   constructor() {
+    this.decoderWorker.audio.onDecode = (e) => {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onDecode: e`, e)
+    }
     this.decoderWorker.audio.onError = (e) => {
       console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onError: e`, e)
       this.stop()
-    }
-    this.decoderWorker.video.onError = (e) => {
-      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.video.onError: e`, e)
-      this.stop()
-    }
-
-    this.decoderWorker.audio.onDecode = (e) => {
-      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onDecode: e`, e)
     }
 
     this.decoderWorker.video.onDecode = (e) => {
@@ -42,6 +37,10 @@ export class PrWebCodecsPlayer {
       for (const key of keys) {
         this.cutRenderWorker.get(key).push(e)
       }
+    }
+    this.decoderWorker.video.onError = (e) => {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.video.onError: e`, e)
+      this.stop()
     }
   }
 
