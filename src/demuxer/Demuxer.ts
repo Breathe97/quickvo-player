@@ -83,7 +83,6 @@ export class Demuxer {
         timestampExtended: flvParser.tag.tagHeader.getTimestampExtended(view, offset),
         streamID: flvParser.tag.tagHeader.getStreamID(view, offset)
       }
-
       return obj
     }
 

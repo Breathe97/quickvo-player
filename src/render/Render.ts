@@ -46,10 +46,11 @@ export class Render {
   }
 
   private renderFrame = async () => {
-    if (!this.ctx || !this.offscreenCanvas) return
+    // if (!this.ctx || !this.offscreenCanvas) return
     const frame = this.pendingFrames.shift()
 
     this.isRendering = Boolean(frame)
+
     if (!frame) {
       this.isRendering = false
       return
@@ -63,7 +64,10 @@ export class Render {
 
     const timeUntilNextFrame = this.calculateTimeUntilNextFrame(timestamp)
     await new Promise((r) => setTimeout(r, timeUntilNextFrame))
-    this.ctx.drawImage(cutImg, 0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height)
+
+    if (this.ctx && this.offscreenCanvas) {
+      this.ctx.drawImage(cutImg, 0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height)
+    }
 
     img.close()
     cutImg.close()

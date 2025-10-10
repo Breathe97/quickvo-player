@@ -23,16 +23,25 @@ export class PrWebCodecsPlayer {
   onSEI = (_payload: Uint8Array) => {}
 
   constructor() {
-    this.decoderWorker.onDecode = (e) => {
+    this.decoderWorker.audio.onError = (e) => {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onError: e`, e)
+      this.stop()
+    }
+    this.decoderWorker.video.onError = (e) => {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.video.onError: e`, e)
+      this.stop()
+    }
+
+    this.decoderWorker.audio.onDecode = (e) => {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onDecode: e`, e)
+    }
+
+    this.decoderWorker.video.onDecode = (e) => {
       this.renderWorker.push(e)
       const keys = [...this.cutRenderWorker.keys()]
       for (const key of keys) {
         this.cutRenderWorker.get(key).push(e)
       }
-    }
-    this.decoderWorker.onError = (e) => {
-      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.onError: e`, e)
-      this.stop()
     }
   }
 
@@ -52,26 +61,34 @@ export class PrWebCodecsPlayer {
         break
       case 'audio':
         {
-          const { accPacketType, frameType, data, nalus = [] } = body
+          const { accPacketType, data } = body
+
+          // 初始化解码器
           if (accPacketType === 0) {
-            console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
-            const { codec = '', data: description, sampleRate, channels } = body
-            const config: AudioDecoderConfig = { codec, description, sampleRate, numberOfChannels: channels }
-            console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: config`, config)
-            this.decoderWorker.initAudio(config)
+            const { codec, sampleRate, channelConfiguration } = body
+            const config: AudioDecoderConfig = { codec, sampleRate, numberOfChannels: channelConfiguration, description: new Uint8Array([]) }
+            this.decoderWorker.audio.init(config)
+          }
+          // 解码
+          else if (accPacketType === 1) {
+            const type = 'key'
+            this.decoderWorker.audio.decode({ type, timestamp: timestamp * 1, data })
           }
         }
         break
       case 'video':
         {
           const { avcPacketType, frameType, data, nalus = [] } = body
+
+          // 初始化解码器
           if (avcPacketType === 0) {
-            const { codec = '', data: description } = body
-            this.decoderWorker.initVideo({ codec, description })
+            const { codec, data: description } = body
+            this.decoderWorker.video.init({ codec, description })
           }
-          if (avcPacketType === 1) {
+          // 解码
+          else if (avcPacketType === 1) {
             const type = frameType === 1 ? 'key' : 'delta'
-            this.decoderWorker.decodeVideo({ type, timestamp: timestamp * 1000, data })
+            this.decoderWorker.video.decode({ type, timestamp: timestamp * 1000, data })
 
             for (const nalu of nalus) {
               const { header, payload } = nalu
@@ -185,7 +202,8 @@ export class PrWebCodecsPlayer {
   stop = () => {
     this.prFetch.stop()
     this.demuxerWorker.destroy()
-    this.decoderWorker.destroy()
+    this.decoderWorker.audio.destroy()
+    this.decoderWorker.video.destroy()
     this.renderWorker.destroy()
     const tracks = this.stream?.getTracks() || []
     for (const track of tracks) {

@@ -3,42 +3,66 @@ import Worker from './index.worker.ts?worker&inline' // 在生产环境中，可
 export class DecoderWorker {
   worker = new Worker()
 
-  onDecode = (_frame: { img: ImageBitmap; timestamp: number }) => {}
-  onError = (_e: DOMException) => {}
-
   constructor() {
     this.worker.onmessage = (e) => {
-      const { action, data } = e.data
-      if (action === 'onDecode') {
-        this.onDecode(data)
-      }
-      if (action === 'onError') {
-        this.onError(data)
+      const { type, action, data } = e.data
+
+      switch (type) {
+        case 'audio':
+          {
+            if (action === 'onDecode') {
+              this.audio.onDecode(data)
+            }
+            if (action === 'onError') {
+              this.audio.onError(data)
+            }
+          }
+          break
+        case 'video':
+          {
+            if (action === 'onDecode') {
+              this.video.onDecode(data)
+            }
+            if (action === 'onError') {
+              this.video.onError(data)
+            }
+          }
+          break
       }
     }
   }
 
-  initAudio = (config: AudioDecoderConfig) => {
-    this.worker.postMessage({ action: 'initAudio', data: config })
+  audio = {
+    init: async (config: AudioDecoderConfig) => {
+      this.worker.postMessage({ type: 'audio', action: 'init', data: config })
+    },
+    decode: async (init: EncodedAudioChunkInit) => {
+      this.worker.postMessage({ type: 'audio', action: 'decode', data: init })
+    },
+    onDecode: (_AudioData: AudioData) => {},
+    onError: (_e: DOMException) => {},
+    flush: () => {
+      this.worker.postMessage({ type: 'audio', action: 'flush' })
+    },
+    destroy: () => {
+      this.worker.postMessage({ type: 'audio', action: 'destroy' })
+    }
   }
 
-  initVideo = (config: VideoDecoderConfig) => {
-    this.worker.postMessage({ action: 'initVideo', data: config })
-  }
-
-  decodeAudio = async (init: EncodedAudioChunkInit) => {
-    this.worker.postMessage({ action: 'decodeAudio', data: init })
-  }
-
-  decodeVideo = async (init: EncodedVideoChunkInit) => {
-    this.worker.postMessage({ action: 'decodeVideo', data: init })
-  }
-
-  flush = () => {
-    this.worker.postMessage({ action: 'flush' })
-  }
-
-  destroy = () => {
-    this.worker.postMessage({ action: 'destroy' })
+  video = {
+    init: async (config: VideoDecoderConfig) => {
+      this.worker.postMessage({ type: 'video', action: 'init', data: config })
+    },
+    decode: async (init: EncodedVideoChunkInit) => {
+      this.worker.postMessage({ type: 'video', action: 'decode', data: init })
+    },
+    onDecode: (_frame: { img: ImageBitmap; timestamp: number }) => {},
+    onError: (_e: DOMException) => {},
+    flush: () => {
+      this.worker.postMessage({ type: 'video', action: 'flush' })
+    },
+    destroy: () => {
+      this.worker.postMessage({ type: 'video', action: 'destroy' })
+    }
   }
 }

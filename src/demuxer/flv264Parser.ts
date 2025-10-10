@@ -308,6 +308,7 @@ export const parseMetaData = (view: DataView, offset: number) => {
 
 export const parseAudio = (view: DataView, offset: number, dataSize: number) => {
   let currentOffset = offset
+
   // [0]
   const num = view.getUint8(currentOffset)
 
@@ -317,28 +318,36 @@ export const parseAudio = (view: DataView, offset: number, dataSize: number) => 
   const soundType = num & 0x01 // 声道模式
   currentOffset = currentOffset + 1
 
+  // [1]
+  const accPacketType = view.getUint8(currentOffset)
+  currentOffset = currentOffset + 1
+
+  // [2,dataSize]字节
   const dataLength = dataSize - 2
   const data = new Uint8Array(view.buffer.slice(currentOffset, currentOffset + dataLength))
 
   // aac
   if (soundFormat === 10) {
-    // [1]
-    const accPacketType = view.getUint8(currentOffset)
-    currentOffset = currentOffset + 1
-
     if (accPacketType === 0) {
-      const codec = `mp4a.40.2`
+      const num = view.getUint8(currentOffset)
+      const num_1 = view.getUint8(currentOffset + 1)
 
-      const samplingRates = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350]
-      const sampleRate = samplingRates[soundRate]
+      const audioObjectType = (num & 0xf8) >> 3
+      const samplingFrequencyIndex = ((num & 0x07) << 1) | (num_1 >> 7)
+      const channelConfiguration = (num_1 & 0x78) >> 3
 
-      const channels = soundType + 1
+      // 采样率对照表
+      const sampleRates = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350]
 
-      return { soundFormat, soundRate, soundSize, soundType, data, accPacketType, codec, sampleRate, channels }
+      const codec = `mp4a.40.${audioObjectType}`
+
+      const sampleRate = sampleRates[samplingFrequencyIndex]
+
+      return { soundFormat, soundRate, soundSize, soundType, accPacketType, data, audioObjectType, samplingFrequencyIndex, channelConfiguration, codec, sampleRate }
     }
   }
 
-  return { soundFormat, soundRate, soundSize, soundType, data }
+  return { soundFormat, soundRate, soundSize, soundType, accPacketType, data }
 }
 
 export const parseVideo = (view: DataView, offset: number, dataSize: number) => {
