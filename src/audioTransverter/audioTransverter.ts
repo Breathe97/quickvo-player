@@ -31,8 +31,10 @@ export class AudioTransverter {
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
     this.destination = this.audioContext.createMediaStreamDestination()
     this.stream.addTrack(this.destination.stream.getAudioTracks()[0])
+
     this.nextStartTime = 0
     this.pendingSources = []
+
     return this.stream
   }
 

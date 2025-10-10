@@ -19,6 +19,7 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
+    "pr-audio-stream": "^0.1.1",
     "pr-fetch": "^0.0.1",
     "pr-web-codecs-player": "^0.0.7",
     "protobufjs": "^7.5.4"

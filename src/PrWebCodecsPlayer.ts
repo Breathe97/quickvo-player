@@ -187,14 +187,6 @@ export class PrWebCodecsPlayer {
   }
 
   /**
-   * 获取媒体流
-   * @param fps : number = 25
-   */
-  getStream = (fps: number = 25) => {
-    return this.stream
-  }
-
-  /**
    * 开始播放
    * @param url : string
    */
@@ -227,21 +219,6 @@ export class PrWebCodecsPlayer {
     this.decoderWorker.audio.destroy()
     this.decoderWorker.video.destroy()
     this.renderWorker.destroy()
-
-    {
-      const tracks = this.audioStream?.getTracks() || []
-      for (const track of tracks) {
-        track.enabled = false
-        track.stop()
-      }
-    }
-
-    {
-      const tracks = this.videoStream?.getTracks() || []
-      for (const track of tracks) {
-        track.enabled = false
-        track.stop()
-      }
-    }
+    this.audioTransverter.destroy()
   }
 }

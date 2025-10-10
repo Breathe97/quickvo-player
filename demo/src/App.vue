@@ -1,10 +1,8 @@
 <template>
   <div>
-    <div style="font-size: 30px; margin-top: 20px">WebCodecsPlayer</div>
-    <div style="margin: 12px 0">
-      <input style="padding: 6px" id="input" type="text" v-model="url" placeholder="https://xxxx.flv" />
-    </div>
-    <div style="margin: 10px 0; display: flex; gap: 12px; justify-content: center">
+    <div style="font-size: 30px; line-height: 60px">WebCodecsPlayer</div>
+    <div style="margin: 8px 0; display: flex; gap: 12px; justify-content: center">
+      <input style="padding: 6px; width: 320px" id="input" type="text" v-model="url" placeholder="https://xxxx.flv" />
       <button @click="changeUrl">Other</button>
       <button @click="play">Start</button>
       <button @click="stop">Stop</button>
@@ -15,11 +13,13 @@
         <div id="canvas-view" style="background-color: antiquewhite"></div>
       </div>
       <div class="video-media-stream">
-        <div class="title">MediaStream</div>
+        <div class="title">To MediaStream</div>
         <div id="video-view" style="background-color: brown"></div>
       </div>
-      <div class="video-media-stream">
-        <div class="title">Cut MediaStream</div>
+    </div>
+    <div class="play-view">
+      <div class="video-media-cut-stream">
+        <div class="title">Cut To MediaStream</div>
         <div id="video-view-cut" style="background-color: dimgray"></div>
       </div>
     </div>
@@ -42,7 +42,6 @@ player.onStream = async (stream) => {
   video_dom.style.height = '100%'
   video_view.replaceChildren(video_dom)
 
-  console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: stream`, stream.getTracks())
   video_dom.srcObject = stream
   video_dom.muted = false
   video_dom?.load()
@@ -57,7 +56,7 @@ player.onCutStream = async (id, stream) => {
   const video_dom = document.createElement('video')
   video_dom.style.width = '100%'
   video_dom.style.height = '100%'
-  video_view.replaceChildren(video_dom)
+  video_view.appendChild(video_dom)
 
   video_dom.srcObject = stream
   video_dom?.load()
@@ -82,7 +81,7 @@ const init = async () => {
 }
 
 const changeUrl = () => {
-  url.value = 'https://stream.quickvo.live/stream_5056569716/1760077154807.flv?auth_key=1760163554-0-0-6a0618f25d4177acea4d62f60793d7c2'
+  url.value = 'https://stream.quickvo.live/stream_aee10e95-c3ed-4cc1-bae9-67344babffa9/1760089968438.flv?auth_key=1760176368-0-0-f5df7900f0449a49ad46aa93fe401340'
 }
 
 const play = async () => {
@@ -97,19 +96,29 @@ const stop = () => {
 <style scoped>
 .play-view {
   position: relative;
-  padding: 20px;
+  padding: 12px;
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
   justify-content: center;
-  gap: 20px;
+  gap: 12px;
 }
 
 .canvas-video-frame,
 .video-media-stream {
   flex: 1;
   min-width: 320px;
-  max-width: 720px;
+  max-width: 600px;
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.video-media-cut-stream {
+  flex: 1;
+  min-width: 320px;
+  max-width: min-content;
   aspect-ratio: 16/9;
   display: flex;
   flex-direction: column;
@@ -130,5 +139,8 @@ const stop = () => {
 #video-view-cut {
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
