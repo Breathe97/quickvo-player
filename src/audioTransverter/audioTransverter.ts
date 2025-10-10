@@ -1,20 +1,45 @@
-const convertToAudioBuffer = async (audioContext: AudioContext, audioData: AudioData) => {
-  const audioBuffer = audioContext.createBuffer(audioData.numberOfChannels, audioData.numberOfFrames, audioData.sampleRate)
+const convertToAudioBuffer = async (audioContext: AudioContext, audioData: AudioData): Promise<AudioBuffer> => {
+  try {
+    const { format, numberOfChannels, numberOfFrames, sampleRate } = audioData
+    const audioBuffer = audioContext.createBuffer(numberOfChannels, numberOfFrames, sampleRate)
 
-  for (let channel = 0; channel < audioData.numberOfChannels; channel++) {
-    const planeSize = audioData.allocationSize({ planeIndex: channel })
-    const data = new Uint8Array(planeSize)
-    audioData.copyTo(data, { planeIndex: channel })
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+      const planeSize = audioData.allocationSize({ planeIndex: channel })
+      const data = new Uint8Array(planeSize)
+      audioData.copyTo(data, { planeIndex: channel })
 
-    // 假设是 16-bit PCM 数据
-    const view = new DataView(data.buffer)
-    const channelData = audioBuffer.getChannelData(channel)
+      const view = new DataView(data.buffer)
+      const channelData = audioBuffer.getChannelData(channel)
 
-    for (let i = 0; i < audioData.numberOfFrames; i++) {
-      channelData[i] = view.getInt16(i * 2, true) / 32768.0
+      for (let i = 0; i < numberOfFrames; i++) {
+        let sample: number
+        switch (format) {
+          case 's16': // 16-bit signed PCM (范围: -32768 ~ 32767)
+          case 's16-planar': // 16-bit signed PCM (范围: -32768 ~ 32767)
+            sample = view.getInt16(i * 2, true) / 32768.0
+            break
+          case 'f32': // 32-bit float (范围: -1.0 ~ 1.0)
+          case 'f32-planar': // 32-bit float (范围: -1.0 ~ 1.0)
+            sample = view.getFloat32(i * 4, true)
+            break
+          case 'u8': // 8-bit unsigned (范围: 0 ~ 255)
+          case 'u8-planar': // 8-bit unsigned (范围: 0 ~ 255)
+            sample = (view.getUint8(i) - 128) / 128.0
+            break
+          default:
+            throw new Error(`Unsupported audio format: ${format}`)
+        }
+
+        // 确保 sample 在 [-1, 1] 范围内，避免溢出
+        channelData[i] = Math.max(-1, Math.min(1, sample))
+      }
     }
+
+    return audioBuffer
+  } catch (error) {
+    console.error('Failed to convert AudioData to AudioBuffer:', error)
+    throw error
   }
-  return audioBuffer
 }
 
 export class AudioTransverter {
