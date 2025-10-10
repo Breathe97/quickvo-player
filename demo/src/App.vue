@@ -33,6 +33,23 @@ const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc
 
 const player = new QuickVoPlayer()
 
+player.onStream = async (stream) => {
+  const video_view = document.querySelector('#video-view')
+  if (!video_view) return
+
+  const video_dom = document.createElement('video')
+  video_dom.style.width = '100%'
+  video_dom.style.height = '100%'
+  video_view.replaceChildren(video_dom)
+
+  console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: stream`, stream.getTracks())
+  video_dom.srcObject = stream
+  video_dom.muted = false
+  video_dom?.load()
+  await nextTick()
+  video_dom?.play()
+}
+
 player.onCutStream = async (id, stream) => {
   const video_view = document.querySelector('#video-view-cut')
   if (!video_view) return
@@ -52,31 +69,20 @@ const init = async () => {
   await nextTick()
 
   const canvas_view = document.querySelector('#canvas-view')
-  const video_view = document.querySelector('#video-view')
 
-  if (!canvas_view || !video_view) return
+  if (!canvas_view) return
 
   const canvas_dom = document.createElement('canvas')
   canvas_dom.style.height = '100%'
   canvas_view.replaceChildren(canvas_dom)
 
-  const video_dom = document.createElement('video')
-  video_dom.style.width = '100%'
-  video_dom.style.height = '100%'
-  video_view.replaceChildren(video_dom)
-
   player.init(canvas_dom)
-  const stream = player.getStream()
-  if (stream) {
-    video_dom.srcObject = stream
-    video_dom?.load()
-    await nextTick()
-    video_dom?.play()
-  }
+
+  await new Promise((resolve) => setTimeout(() => resolve(true), 1000))
 }
 
 const changeUrl = () => {
-  url.value = 'https://stream.quickvo.live/stream_5056569716/1759991932053.flv?auth_key=1760078332-0-0-9f9a77471523e2fed2f0b58fdfa0c3f5'
+  url.value = 'https://stream.quickvo.live/stream_5056569716/1760077154807.flv?auth_key=1760163554-0-0-6a0618f25d4177acea4d62f60793d7c2'
 }
 
 const play = async () => {

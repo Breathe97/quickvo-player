@@ -1,6 +1,7 @@
 import { DemuxerWorker } from './demuxer/DemuxerWorker'
 import { DecoderWorker } from './decoder/DecoderWorker'
 import { RenderWorker } from './render/RenderWorker'
+import { AudioTransverter } from './audioTransverter/audioTransverter'
 
 import { PrFetch } from 'pr-fetch'
 import { CutOption } from './render/type'
@@ -14,17 +15,23 @@ export class PrWebCodecsPlayer {
   decoderWorker = new DecoderWorker()
   renderWorker = new RenderWorker()
 
+  audioTransverter = new AudioTransverter()
+
+  // @ts-ignore
+  audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
   cutRenderWorker = new Map()
 
   canvas: HTMLCanvasElement | undefined
 
-  stream: MediaStream | undefined
-
+  onStream = (_stream: MediaStream) => {}
   onSEI = (_payload: Uint8Array) => {}
 
   constructor() {
     this.decoderWorker.audio.onDecode = (e) => {
-      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onDecode: e`, e)
+      // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onDecode: e`, e)
+      this.audioTransverter.push(e)
+      e.close()
     }
     this.decoderWorker.audio.onError = (e) => {
       console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->decoderWorker.audio.onError: e`, e)
@@ -117,11 +124,29 @@ export class PrWebCodecsPlayer {
    * @returns
    */
   initRender = ({ width = 256, height = 256 } = {}) => {
+    this.audioTransverter.init()
+    const audioStream = this.audioTransverter?.getStream()
+
     if (!this.canvas) return
     this.canvas.width = width
     this.canvas.height = height
     const offscreenCanvas = this.canvas.transferControlToOffscreen()
     this.renderWorker.init(offscreenCanvas)
+    const videoStream = this.canvas?.captureStream(25)
+
+    const stream = new MediaStream()
+
+    {
+      const [track] = audioStream.getAudioTracks() || []
+      track && stream.addTrack(track)
+    }
+
+    {
+      const [track] = videoStream.getVideoTracks() || []
+      track && stream.addTrack(track)
+    }
+
+    this.onStream && this.onStream(stream)
   }
 
   /**
@@ -166,8 +191,6 @@ export class PrWebCodecsPlayer {
    * @param fps : number = 25
    */
   getStream = (fps: number = 25) => {
-    // 捕获画布流
-    this.stream = this.canvas?.captureStream(fps)
     return this.stream
   }
 
@@ -204,10 +227,21 @@ export class PrWebCodecsPlayer {
     this.decoderWorker.audio.destroy()
     this.decoderWorker.video.destroy()
     this.renderWorker.destroy()
-    const tracks = this.stream?.getTracks() || []
-    for (const track of tracks) {
-      track.enabled = false
-      track.stop()
+
+    {
+      const tracks = this.audioStream?.getTracks() || []
+      for (const track of tracks) {
+        track.enabled = false
+        track.stop()
+      }
+    }
+
+    {
+      const tracks = this.videoStream?.getTracks() || []
+      for (const track of tracks) {
+        track.enabled = false
+        track.stop()
+      }
     }
   }
 }
