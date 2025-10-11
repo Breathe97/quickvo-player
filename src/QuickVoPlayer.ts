@@ -1,6 +1,5 @@
-// import { PrWebCodecsPlayer } from 'pr-web-codecs-player'
+import { PrPlayer } from 'pr-player'
 import * as protos from './protos/index'
-import { PrWebCodecsPlayer } from './PrWebCodecsPlayer'
 
 // 解析自定义SEI信息
 const parseSEI = (payload: Uint8Array) => {
@@ -60,17 +59,16 @@ const parseSEI = (payload: Uint8Array) => {
   }
 }
 
-export class QuickVoPlayer extends PrWebCodecsPlayer {
-  customRenders = new Map()
-
-  cuts: string[] = []
-
-  onCutStream = (id: string, stream: MediaStream) => {}
+export class QuickVoPlayer extends PrPlayer {
+  cuts: Map<string, string> = new Map()
 
   constructor() {
     super()
   }
 
+  /**
+   * 监听SEI信息
+   */
   onSEI = (payload: Uint8Array) => {
     const res = parseSEI(payload)
     // 布局事件
@@ -84,14 +82,15 @@ export class QuickVoPlayer extends PrWebCodecsPlayer {
         const { id, videos = [] } = user
         for (const video of videos) {
           const { x, y, width, height } = video
-          if (!this.cuts.includes(id)) {
-            console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: video`, video)
-            this.cuts.push(id)
-            const canvas = document.createElement('canvas')
-            this.createCut(id, { sx: x, sy: y, sw: width, sh: height }, canvas)
-            const stream = canvas.captureStream(25)
-            this.onCutStream(id, stream)
-          }
+
+          const val = `${x}-${y}-${width}-${height}`
+
+          const cut = this.cuts.get(id)
+
+          if (cut && cut === val) return // 重复
+
+          this.cuts.set(id, val)
+          this.createCut(id, { sx: x, sy: y, sw: width, sh: height })
         }
       }
     }

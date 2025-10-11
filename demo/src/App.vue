@@ -6,6 +6,7 @@
       <button @click="changeUrl">Other</button>
       <button @click="play">Start</button>
       <button @click="stop">Stop</button>
+      <button @click="cut">Cut</button>
     </div>
     <div class="play-view">
       <div class="canvas-video-frame">
@@ -27,13 +28,18 @@
 </template>
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
-import { QuickVoPlayer } from '../../src/index.ts'
+import { QuickVoPlayer } from '../../src/index'
 
 const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
+const info = ref()
 
 const player = new QuickVoPlayer()
 
-player.onStream = async (stream) => {
+player.on.demuxer.script = (e) => {
+  info.value = e.body
+}
+
+player.on.stream = async (stream) => {
   const video_view = document.querySelector('#video-view')
   if (!video_view) return
 
@@ -49,15 +55,13 @@ player.onStream = async (stream) => {
   video_dom?.play()
 }
 
-player.onCutStream = async (id, stream) => {
+player.on.cutStream = async (id, stream) => {
   const video_view = document.querySelector('#video-view-cut')
   if (!video_view) return
-
   const video_dom = document.createElement('video')
   video_dom.style.width = '100%'
   video_dom.style.height = '100%'
   video_view.appendChild(video_dom)
-
   video_dom.srcObject = stream
   video_dom?.load()
   await nextTick()
@@ -87,6 +91,23 @@ const changeUrl = () => {
 const play = async () => {
   await init()
   player.start(url.value)
+}
+
+const cut = () => {
+  const canvas_dom = document.createElement('canvas')
+  canvas_dom.style.height = '100%'
+  const { width, height } = info.value
+  const video_view = document.querySelector('#video-view-cut')
+
+  if (!video_view) return
+
+  while (video_view.firstChild) {
+    video_view.firstChild.remove()
+  }
+
+  video_view.appendChild(canvas_dom)
+
+  player.createCut('cut-1', { sx: width * 0.25, sy: height * 0.25, sw: width * 0.3, sh: height * 0.3 }, canvas_dom)
 }
 
 const stop = () => {
@@ -142,5 +163,6 @@ const stop = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
 }
 </style>
