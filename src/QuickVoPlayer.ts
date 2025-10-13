@@ -1,5 +1,6 @@
-import { PrPlayer } from 'pr-player'
+// import { PrPlayer } from 'pr-player'
 import * as protos from './protos/index'
+import { PrPlayer } from './PrPlayer'
 
 // 解析自定义SEI信息
 const parseSEI = (payload: Uint8Array) => {
@@ -59,12 +60,16 @@ const parseSEI = (payload: Uint8Array) => {
   }
 }
 
-export class QuickVoPlayer extends PrPlayer {
+export class QuickVoPlayer {
+  displayMode: 'original' | 'cut' = 'original'
+
+  prPlayer = new PrPlayer()
+
   cuts: Map<string, string> = new Map()
 
-  constructor() {
-    super()
-  }
+  dom: Element | undefined
+
+  constructor() {}
 
   /**
    * 监听SEI信息
@@ -77,6 +82,7 @@ export class QuickVoPlayer extends PrPlayer {
       // @ts-ignore
       const { userMap } = data
       const users = [...Object.values(userMap)]
+
       for (const user of users) {
         // @ts-ignore
         const { id, videos = [] } = user
@@ -89,10 +95,86 @@ export class QuickVoPlayer extends PrPlayer {
 
           if (cut && cut === val) return // 重复
 
+          this.prPlayer?.video.createCut(id, { sx: x, sy: y, sw: width, sh: height })
           this.cuts.set(id, val)
-          this.createCut(id, { sx: x, sy: y, sw: width, sh: height })
+        }
+      }
+
+      // 检查可能不存在的用户
+      const keys = this.cuts.keys()
+      for (const key of keys) {
+        const user = users.find((item: any) => item.id === key)
+        if (user) continue
+        const nodes = this.dom?.childNodes || []
+        for (const node of nodes) {
+          // @ts-ignore
+          if (node.id === key) {
+            this.dom?.removeChild(node)
+          }
         }
       }
     }
+  }
+
+  init = (dom: Element | string, mode: 'original' | 'cut' = 'original') => {
+    this.displayMode = mode
+
+    if (typeof dom === 'string') {
+      const _dom = document.querySelector(dom)
+      if (_dom) {
+        this.dom = _dom
+      }
+    } else {
+      this.dom = dom
+    }
+
+    this.prPlayer.stop()
+    this.cuts = new Map()
+
+    this.prPlayer.on.video = undefined
+    this.prPlayer.on.demuxer.sei = undefined
+    this.prPlayer.on.cut = undefined
+
+    while (this.dom?.lastChild) {
+      this.dom?.lastChild && this.dom?.removeChild(this.dom?.lastChild)
+    }
+
+    if (this.displayMode === 'original') {
+      this.prPlayer.on.video = (canvas) => {
+        console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: video`, canvas)
+        canvas.style.height = '100%'
+        this.dom?.replaceChildren(canvas)
+      }
+    }
+
+    if (this.displayMode === 'cut') {
+      this.prPlayer.on.demuxer.sei = this.onSEI
+      this.prPlayer.on.cut = async (key, canvas) => {
+        canvas.id = key
+
+        const nodes = this.dom?.childNodes || []
+        for (const node of nodes) {
+          // @ts-ignore
+          if (node.id === key) {
+            this.dom?.removeChild(node)
+          }
+        }
+        canvas.style.height = '100%'
+        this.dom?.appendChild(canvas)
+      }
+    }
+
+    this.prPlayer.init()
+  }
+
+  start = (url: string) => {
+    this.prPlayer?.start(url)
+  }
+  stop = () => {
+    this.prPlayer?.stop()
+  }
+
+  setMute = (state?: boolean | undefined) => {
+    this.prPlayer?.audio.setMute(state)
   }
 }
