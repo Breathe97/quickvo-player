@@ -20,7 +20,7 @@
       <div v-for="user in users" :key="user.userId" class="canvas-video-cut">
         <div class="title">Cut: {{ user.userId }}</div>
         <div id="canvas-video-cut-view" style="background-color: dimgray">
-          <video :srcObject="user.mc_video.stream" autoplay style="width: 100%; height: 100%"></video>
+          <video :srcObject="user.mc_video?.stream" autoplay style="width: 100%; height: 100%"></video>
         </div>
       </div>
     </div>

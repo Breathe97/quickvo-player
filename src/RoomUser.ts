@@ -153,8 +153,6 @@ export class RoomUser {
             this.mc_video.sy = y || 0
             this.mc_video.sw = width || 0
             this.mc_video.sh = height || 0
-            const { sx, sy, sw, sh } = this.mc_video
-            this.mc_video.worker?.setCut({ sx, sy, sw, sh })
           }
 
           break
@@ -173,8 +171,6 @@ export class RoomUser {
             this.ss_video.sy = y || 0
             this.ss_video.sw = width || 0
             this.ss_video.sh = height || 0
-            const { sx, sy, sw, sh } = this.ss_video
-            this.ss_video.worker?.setCut({ sx, sy, sw, sh })
           }
           break
       }

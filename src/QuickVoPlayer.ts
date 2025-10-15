@@ -117,24 +117,33 @@ export class QuickVoPlayer {
     if (!this.usersMap.has(userId)) {
       const userIns = new RoomUser()
       this.usersMap.set(userId, userIns)
+    }
+    const userIns = this.usersMap.get(userId)
+    if (userIns) {
       userIns.init(info)
-
       // 根据当前用户持有轨道 创建渲染器
       if (userIns.mc_video) {
-        const { worker, stream, destroy } = this.prPlayer.cut.create(`${userIns.userId}_mc_video`, userIns.mc_video)
-        userIns.mc_video.worker = worker
+        const { sx, sy, sw, sh } = userIns.mc_video
+        const key = `${userIns.userId}_mc_video`
+        const { stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
         userIns.mc_video.stream = stream
-        userIns.mc_video.destroy = destroy
+        userIns.mc_video.destroy = () => {
+          destroy()
+          this.prPlayer.cut.remove(key)
+          this.usersMap.delete(userIns.userId)
+        }
       }
       if (userIns.ss_video) {
-        const { worker, stream, destroy } = this.prPlayer.cut.create(`${userIns.userId}_ss_video`, userIns.ss_video)
-        userIns.ss_video.worker = worker
+        const { sx, sy, sw, sh } = userIns.ss_video
+        const key = `${userIns.userId}_ss_video`
+        const { stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
         userIns.ss_video.stream = stream
-        userIns.ss_video.destroy = destroy
+        userIns.ss_video.destroy = () => {
+          destroy()
+          this.prPlayer.cut.remove(key)
+          this.usersMap.delete(userIns.userId)
+        }
       }
-    } else {
-      const userIns = this.usersMap.get(userId)
-      userIns?.init(info)
     }
   }
 
@@ -142,58 +151,62 @@ export class QuickVoPlayer {
    * 监听SEI信息
    */
   onSEI = (payload: Uint8Array) => {
-    const res = parseSEI(payload)
-    if (!res) return
-    const { event, data } = res as any
+    try {
+      const res = parseSEI(payload)
+      if (!res) return
+      const { event, data } = res as any
 
-    switch (event) {
-      case 0: // 布局事件
-        {
-          const { roomId, userMap } = data
-          if (roomId !== this.room.roomId) return
-
-          const oldUpdateTimeKey = this.getAllUseUpdateKey()
-
-          const userIds = Object.keys(userMap)
-
-          // 移除不存在的用户
+      switch (event) {
+        case 0: // 布局事件
           {
-            const keys = Object.keys(this.usersMap)
-            for (const key of keys) {
-              const userIns = this.usersMap.get(key)
-              if (!userIds.includes(key)) {
-                userIns?.destroy()
+            const { roomId, userMap } = data
+            if (roomId !== this.room.roomId) return
+
+            const oldUpdateTimeKey = this.getAllUseUpdateKey()
+
+            const userIds = Object.keys(userMap)
+
+            // 移除不存在的用户
+            {
+              const usersIns = [...this.usersMap.values()]
+
+              for (const userIns of usersIns) {
+                if (!userIds.includes(userIns.userId)) {
+                  userIns?.destroy()
+                }
+              }
+            }
+
+            // 更新其余用户的信息
+            for (const userId of userIds) {
+              const info = userMap[userId] as protos.com.quick.voice.proto.UserInfo
+              this.checkAndCreateUser(userId, info)
+            }
+
+            const newUpdateTimeKey = this.getAllUseUpdateKey()
+
+            if (oldUpdateTimeKey !== newUpdateTimeKey) {
+              if (this.on.users) {
+                const users = [...this.usersMap.values()]
+                const arr = Array.from(users, ({ userId, mc_audio, mc_video, ss_audio, ss_video, updateTime }) => ({ userId, mc_audio, mc_video, ss_audio, ss_video, updateTime }))
+                this.on.users(arr)
               }
             }
           }
-
-          // 更新其余用户的信息
-          for (const userId of userIds) {
-            const info = userMap[userId] as protos.com.quick.voice.proto.UserInfo
-            this.checkAndCreateUser(userId, info)
+          break
+        case 1: // 房间信息
+          {
+            const { roomId, updateTime } = data
+            const { author, version } = data.customKeyMap
+            this.room.roomId = roomId
+            this.room.updateTime = updateTime
+            this.room.author = author
+            this.room.version = version
           }
-
-          const newUpdateTimeKey = this.getAllUseUpdateKey()
-
-          if (oldUpdateTimeKey !== newUpdateTimeKey) {
-            if (this.on.users) {
-              const users = [...this.usersMap.values()]
-              const arr = Array.from(users, ({ userId, mc_audio, mc_video, ss_audio, ss_video, updateTime }) => ({ userId, mc_audio, mc_video, ss_audio, ss_video, updateTime }))
-              this.on.users(arr)
-            }
-          }
-        }
-        break
-      case 1: // 房间信息
-        {
-          const { roomId, updateTime } = data
-          const { author, version } = data.customKeyMap
-          this.room.roomId = roomId
-          this.room.updateTime = updateTime
-          this.room.author = author
-          this.room.version = version
-        }
-        break
+          break
+      }
+    } catch (error) {
+      console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->onSEI: error`, error)
     }
   }
 }
