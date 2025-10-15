@@ -95,10 +95,16 @@ export class QuickVoPlayer {
     this.prPlayer.init()
   }
   start = (url: string) => {
+    this.stop()
     this.prPlayer.start(url)
   }
   stop = () => {
     this.prPlayer.stop()
+    this.usersMap = new Map()
+    this.room.roomId = ''
+    this.room.author = ''
+    this.room.updateTime = ''
+    this.room.version = ''
   }
   setMute = (state?: boolean | undefined) => {
     this.prPlayer.setMute(state)
@@ -117,32 +123,54 @@ export class QuickVoPlayer {
     if (!this.usersMap.has(userId)) {
       const userIns = new RoomUser()
       this.usersMap.set(userId, userIns)
-    }
-    const userIns = this.usersMap.get(userId)
-    if (userIns) {
       userIns.init(info)
-      // 根据当前用户持有轨道 创建渲染器
-      if (userIns.mc_video) {
-        const { sx, sy, sw, sh } = userIns.mc_video
-        const key = `${userIns.userId}_mc_video`
-        const { stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
-        userIns.mc_video.stream = stream
-        userIns.mc_video.destroy = () => {
-          destroy()
-          this.prPlayer.cut.remove(key)
-          this.usersMap.delete(userIns.userId)
+      if (userIns) {
+        if (userIns.mc_video) {
+          const { sx, sy, sw, sh } = userIns.mc_video
+
+          const key = `${userIns.userId}_mc_video`
+
+          const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
+          userIns.mc_video.worker = worker
+
+          if (this.displayMode === 'original') {
+            worker.setPause(true)
+          }
+          userIns.mc_video.stream = stream
+          userIns.mc_video.destroy = () => {
+            destroy()
+            this.prPlayer.cut.remove(key)
+            this.usersMap.delete(userIns.userId)
+          }
+        }
+        if (userIns.ss_video) {
+          const { sx, sy, sw, sh } = userIns.ss_video
+          const key = `${userIns.userId}_ss_video`
+          const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
+          userIns.ss_video.worker = worker
+
+          if (this.displayMode === 'original') {
+            worker.setPause(true)
+          }
+          userIns.ss_video.stream = stream
+          userIns.ss_video.destroy = () => {
+            destroy()
+            this.prPlayer.cut.remove(key)
+            this.usersMap.delete(userIns.userId)
+          }
         }
       }
-      if (userIns.ss_video) {
+    } else {
+      const userIns = this.usersMap.get(userId)
+      userIns?.init(info)
+      // 根据当前用户持有轨道 更新渲染器
+      if (userIns?.mc_video) {
+        const { sx, sy, sw, sh } = userIns.mc_video
+        userIns?.mc_video.worker?.setCut({ sx, sy, sw, sh })
+      }
+      if (userIns?.ss_video) {
         const { sx, sy, sw, sh } = userIns.ss_video
-        const key = `${userIns.userId}_ss_video`
-        const { stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
-        userIns.ss_video.stream = stream
-        userIns.ss_video.destroy = () => {
-          destroy()
-          this.prPlayer.cut.remove(key)
-          this.usersMap.delete(userIns.userId)
-        }
+        userIns?.ss_video.worker?.setCut({ sx, sy, sw, sh })
       }
     }
   }
@@ -207,6 +235,32 @@ export class QuickVoPlayer {
       }
     } catch (error) {
       console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->onSEI: error`, error)
+    }
+  }
+
+  setDisplayMode = (mode: 'original' | 'cut') => {
+    this.displayMode = mode
+    switch (mode) {
+      case 'original': // 原画 开启主渲染 暂停裁剪渲染
+        {
+          this.prPlayer.setPause(false)
+          const usersIns = [...this.usersMap.values()]
+          for (const userIns of usersIns) {
+            userIns.mc_video?.worker?.setPause(true)
+            userIns.ss_video?.worker?.setPause(true)
+          }
+        }
+        break
+      case 'cut': // 裁剪 暂停主渲染 开启剪切渲染
+        {
+          this.prPlayer.setPause(true)
+          const usersIns = [...this.usersMap.values()]
+          for (const userIns of usersIns) {
+            userIns.mc_video?.worker?.setPause(false)
+            userIns.ss_video?.worker?.setPause(false)
+          }
+        }
+        break
     }
   }
 }

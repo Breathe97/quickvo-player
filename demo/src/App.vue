@@ -5,6 +5,7 @@
       <input style="padding: 6px; width: 240px" id="input" type="text" v-model="url" placeholder="https://xxxx.flv" />
       <div style="display: flex; gap: 12px">
         <button @click="play">Start</button>
+        <button @click="setDisplay">DisplayMode: {{ display }}</button>
         <button @click="stop">Stop</button>
       </div>
     </div>
@@ -40,7 +41,9 @@ const users = ref<any>([])
 const player = new QuickVoPlayer()
 
 player.on.users = (e) => {
-  users.value = e
+  if (display.value === 'cut') {
+    users.value = e
+  }
 }
 
 const stop = () => {
@@ -63,6 +66,12 @@ const play = async () => {
       dom?.replaceChildren(view)
     }
   }
+}
+
+const display = ref<'cut' | 'original'>('original')
+const setDisplay = () => {
+  display.value = display.value === 'original' ? 'cut' : 'original'
+  player.setDisplayMode(display.value)
 }
 </script>
 <style scoped>
