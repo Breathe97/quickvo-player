@@ -1,6 +1,6 @@
-// import { PrPlayer } from 'pr-player'
+import { PrPlayer } from 'pr-player'
 import * as protos from './protos/index'
-import { PrPlayer } from './PrPlayer'
+import { RoomUser } from './RoomUser'
 
 // 解析自定义SEI信息
 const parseSEI = (payload: Uint8Array) => {
@@ -60,121 +60,140 @@ const parseSEI = (payload: Uint8Array) => {
   }
 }
 
+interface Room {
+  roomId?: string
+  updateTime?: string
+  author?: string
+  version?: string
+}
+
 export class QuickVoPlayer {
   displayMode: 'original' | 'cut' = 'original'
 
   prPlayer = new PrPlayer()
 
-  cuts: Map<string, string> = new Map()
-
   dom: Element | undefined
 
-  constructor() {}
+  room: Room = {
+    roomId: '',
+    updateTime: '',
+    author: '',
+    version: ''
+  }
+
+  usersMap: Map<string, RoomUser> = new Map()
+
+  on = {
+    users: (_users: any) => {}
+  }
+
+  constructor() {
+    this.prPlayer.on.demuxer.sei = this.onSEI
+  }
+
+  init = () => {
+    this.prPlayer.init()
+  }
+  start = (url: string) => {
+    this.prPlayer.start(url)
+  }
+  stop = () => {
+    this.prPlayer.stop()
+  }
+  setMute = (state?: boolean | undefined) => {
+    this.prPlayer.setMute(state)
+  }
+  getStream = () => {
+    return this.prPlayer.getStream()
+  }
+
+  getAllUseUpdateKey = () => {
+    const usersIns = [...this.usersMap.values()]
+    const arr = Array.from(usersIns, (ins) => ins.updateTime)
+    return arr.join('_')
+  }
+
+  checkAndCreateUser = (userId: string, info: protos.com.quick.voice.proto.UserInfo) => {
+    if (!this.usersMap.has(userId)) {
+      const userIns = new RoomUser()
+      this.usersMap.set(userId, userIns)
+      userIns.init(info)
+
+      // 根据当前用户持有轨道 创建渲染器
+      if (userIns.mc_video) {
+        const { worker, stream, destroy } = this.prPlayer.cut.create(`${userIns.userId}_mc_video`, userIns.mc_video)
+        userIns.mc_video.worker = worker
+        userIns.mc_video.stream = stream
+        userIns.mc_video.destroy = destroy
+      }
+      if (userIns.ss_video) {
+        const { worker, stream, destroy } = this.prPlayer.cut.create(`${userIns.userId}_ss_video`, userIns.ss_video)
+        userIns.ss_video.worker = worker
+        userIns.ss_video.stream = stream
+        userIns.ss_video.destroy = destroy
+      }
+    } else {
+      const userIns = this.usersMap.get(userId)
+      userIns?.init(info)
+    }
+  }
 
   /**
    * 监听SEI信息
    */
   onSEI = (payload: Uint8Array) => {
     const res = parseSEI(payload)
-    // 布局事件
-    if (res?.event === 0) {
-      const { data } = res
-      // @ts-ignore
-      const { userMap } = data
-      const users = [...Object.values(userMap)]
+    if (!res) return
+    const { event, data } = res as any
 
-      for (const user of users) {
-        // @ts-ignore
-        const { id, videos = [] } = user
-        for (const video of videos) {
-          const { x, y, width, height } = video
+    switch (event) {
+      case 0: // 布局事件
+        {
+          const { roomId, userMap } = data
+          if (roomId !== this.room.roomId) return
 
-          const val = `${x}-${y}-${width}-${height}`
+          const oldUpdateTimeKey = this.getAllUseUpdateKey()
 
-          const cut = this.cuts.get(id)
+          const userIds = Object.keys(userMap)
 
-          if (cut && cut === val) return // 重复
+          // 移除不存在的用户
+          {
+            const keys = Object.keys(this.usersMap)
+            for (const key of keys) {
+              const userIns = this.usersMap.get(key)
+              if (!userIds.includes(key)) {
+                userIns?.destroy()
+              }
+            }
+          }
 
-          this.prPlayer?.video.createCut(id, { sx: x, sy: y, sw: width, sh: height })
-          this.cuts.set(id, val)
-        }
-      }
+          // 更新其余用户的信息
+          for (const userId of userIds) {
+            const info = userMap[userId] as protos.com.quick.voice.proto.UserInfo
+            this.checkAndCreateUser(userId, info)
+          }
 
-      // 检查可能不存在的用户
-      const keys = this.cuts.keys()
-      for (const key of keys) {
-        const user = users.find((item: any) => item.id === key)
-        if (user) continue
-        const nodes = this.dom?.childNodes || []
-        for (const node of nodes) {
-          // @ts-ignore
-          if (node.id === key) {
-            this.dom?.removeChild(node)
+          const newUpdateTimeKey = this.getAllUseUpdateKey()
+
+          if (oldUpdateTimeKey !== newUpdateTimeKey) {
+            if (this.on.users) {
+              const users = [...this.usersMap.values()]
+              const arr = Array.from(users, ({ userId, mc_audio, mc_video, ss_audio, ss_video, updateTime }) => ({ userId, mc_audio, mc_video, ss_audio, ss_video, updateTime }))
+              this.on.users(arr)
+            }
           }
         }
-      }
-    }
-  }
-
-  init = (dom: Element | string, mode: 'original' | 'cut' = 'original') => {
-    this.displayMode = mode
-
-    if (typeof dom === 'string') {
-      const _dom = document.querySelector(dom)
-      if (_dom) {
-        this.dom = _dom
-      }
-    } else {
-      this.dom = dom
-    }
-
-    this.prPlayer.stop()
-    this.cuts = new Map()
-
-    this.prPlayer.on.video = undefined
-    this.prPlayer.on.demuxer.sei = undefined
-    this.prPlayer.on.cut = undefined
-
-    while (this.dom?.lastChild) {
-      this.dom?.lastChild && this.dom?.removeChild(this.dom?.lastChild)
-    }
-
-    if (this.displayMode === 'original') {
-      this.prPlayer.on.video = (canvas) => {
-        console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: video`, canvas)
-        canvas.style.height = '100%'
-        this.dom?.replaceChildren(canvas)
-      }
-    }
-
-    if (this.displayMode === 'cut') {
-      this.prPlayer.on.demuxer.sei = this.onSEI
-      this.prPlayer.on.cut = async (key, canvas) => {
-        canvas.id = key
-
-        const nodes = this.dom?.childNodes || []
-        for (const node of nodes) {
-          // @ts-ignore
-          if (node.id === key) {
-            this.dom?.removeChild(node)
-          }
+        break
+      case 1: // 房间信息
+        {
+          const { roomId, updateTime } = data
+          const { author, version } = data.customKeyMap
+          this.room.roomId = roomId
+          this.room.updateTime = updateTime
+          this.room.author = author
+          this.room.version = version
         }
-        canvas.style.height = '100%'
-        this.dom?.appendChild(canvas)
-      }
+        break
     }
-
-    this.prPlayer.init()
-  }
-
-  start = (url: string) => {
-    this.prPlayer?.start(url)
-  }
-  stop = () => {
-    this.prPlayer?.stop()
-  }
-
-  setMute = (state?: boolean | undefined) => {
-    this.prPlayer?.audio.setMute(state)
   }
 }
