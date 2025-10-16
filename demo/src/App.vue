@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="font-size: 30px; line-height: 80px; padding-top: 40px">WebCodecsPlayer</div>
+    <div style="font-size: 30px; line-height: 80px; padding-top: 40px">QuickVoPlayer</div>
     <div style="margin: 8px 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap">
       <input style="padding: 6px; width: 240px" id="input" type="text" v-model="url" placeholder="https://xxxx.flv" />
       <div style="display: flex; gap: 12px">
@@ -10,11 +10,11 @@
       </div>
     </div>
     <div class="play-view">
-      <div class="canvas-video-frame">
+      <!-- <div class="canvas-video-frame">
         <div class="title">VideoFrame</div>
         <div id="canvas-video-frame-view" style="background-color: antiquewhite"></div>
-      </div>
-      <div v-if="display === 'original'" class="canvas-video-frame">
+      </div> -->
+      <div v-show="display === 'original'" class="canvas-video-frame">
         <div class="title">MediaStream</div>
         <div id="canvas-video-stream-view" style="background-color: aquamarine"></div>
       </div>
@@ -72,6 +72,9 @@ const display = ref<'cut' | 'original'>('original')
 const setDisplay = () => {
   display.value = display.value === 'original' ? 'cut' : 'original'
   player.setDisplayMode(display.value)
+  if (display.value === 'original') {
+    users.value = []
+  }
 }
 </script>
 <style scoped>
