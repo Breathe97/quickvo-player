@@ -14,7 +14,7 @@
         <div class="title">VideoFrame</div>
         <div id="canvas-video-frame-view" style="background-color: antiquewhite"></div>
       </div>
-      <div class="canvas-video-frame">
+      <div v-if="display === 'original'" class="canvas-video-frame">
         <div class="title">MediaStream</div>
         <div id="canvas-video-stream-view" style="background-color: aquamarine"></div>
       </div>
@@ -34,7 +34,7 @@ import { ref, nextTick } from 'vue'
 import { QuickVoPlayer } from '../../src/index'
 
 // const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
-const url = ref('https://stream.quickvo.live/stream_1580201172/1760493179893.flv?auth_key=1760579579-0-0-f34a6cd7a074dbc0cf78b028d55a5b65')
+const url = ref('https://stream.quickvo.live/stream_1580201172/1760578851732.flv?auth_key=1760665251-0-0-6e50c2e71b6048dab4ad795da064bc0a')
 
 const users = ref<any>([])
 
@@ -51,7 +51,7 @@ const stop = () => {
 }
 
 const play = async () => {
-  player.start(url.value)
+  await player.start(url.value)
   player.setMute(false)
 
   {
