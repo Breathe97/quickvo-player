@@ -67,10 +67,17 @@ interface Room {
   version?: string
 }
 
+interface QuickVoPlayerOption {
+  debug?: boolean
+}
+
 export class QuickVoPlayer {
+  option: QuickVoPlayerOption = {
+    debug: false
+  }
   displayMode: 'original' | 'cut' = 'original'
 
-  prPlayer = new PrPlayer()
+  prPlayer: PrPlayer
 
   dom: Element | undefined
 
@@ -87,7 +94,10 @@ export class QuickVoPlayer {
     users: (_users: any) => {}
   }
 
-  constructor() {
+  constructor(option: QuickVoPlayerOption = {}) {
+    const { debug = false } = option
+    this.option.debug = debug
+    this.prPlayer = new PrPlayer({ debug })
     this.prPlayer.on.demuxer.sei = this.onSEI
     this.prPlayer.on.demuxer.chunk = (_e) => {
       // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
