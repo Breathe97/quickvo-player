@@ -34,7 +34,9 @@ import { ref, nextTick } from 'vue'
 import { QuickVoPlayer } from '../../src/index'
 
 // const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
-const url = ref('https://stream.quickvo.live/stream_1580201172/1760578851732.flv?auth_key=1760665251-0-0-6e50c2e71b6048dab4ad795da064bc0a')
+// const url = ref('https://stream.quickvo.live/stream_6307965365/1761530210242.flv?auth_key=1761616610-0-0-ab441b82d17526cd63746b6549daa6a0')
+const url = ref('https://stream.quickvo.live/stream_6307965365/1761530210242.m3u8?auth_key=1761616610-0-0-f466b92f99feceaa3232849fc62f7fa8')
+// const url = ref('https://stream.quickvo.live/stream_a9afa991-585e-4bb3-bbb0-0e947e6b87cf/1760941450189.flv?auth_key=1761027850-0-0-1ffff9d2523c75fe88e87ab8e96ef0b2')
 
 const users = ref<any>([])
 
