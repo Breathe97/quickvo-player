@@ -1,5 +1,5 @@
 {
-  "name": "demo",
+  "name": "quickvo-player",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "quickvo-player": "^0.1.0",
+    "quickvo-player": "^0.1.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {

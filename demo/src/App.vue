@@ -40,7 +40,7 @@ const url = ref('https://stream.quickvo.live/stream_6307965365/1761530210242.m3u
 
 const users = ref<any>([])
 
-const player = new QuickVoPlayer()
+const player = new QuickVoPlayer({ debug: true })
 
 player.on.users = (e) => {
   if (display.value === 'cut') {
