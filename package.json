@@ -1,7 +1,7 @@
 {
   "name": "quickvo-player",
   "description": "基于web-codecs解码flv视频流并输出帧数据。",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "files": [
     "dist"
@@ -19,7 +19,7 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "pr-player": "^0.1.9",
+    "pr-player": "^0.2.0",
     "protobufjs": "^7.5.4"
   },
   "devDependencies": {
