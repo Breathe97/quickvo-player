@@ -104,9 +104,6 @@ export class QuickVoPlayer {
     }
   }
 
-  init = () => {
-    this.prPlayer.init()
-  }
   start = async (url: string) => {
     this.stop()
     return this.prPlayer.start(url)

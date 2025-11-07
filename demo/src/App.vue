@@ -38,10 +38,9 @@ import { QuickVoPlayer } from 'quickvo-player'
 const url = ref('https://stream.quickvo.live/stream_6307965365/1761530210242.m3u8?auth_key=1761616610-0-0-f466b92f99feceaa3232849fc62f7fa8')
 // const url = ref('https://stream.quickvo.live/stream_a9afa991-585e-4bb3-bbb0-0e947e6b87cf/1760941450189.flv?auth_key=1761027850-0-0-1ffff9d2523c75fe88e87ab8e96ef0b2')
 
-const users = ref<any>([])
-
 const player = new QuickVoPlayer({ debug: true })
 
+const users = ref<any>([])
 player.on.users = (e) => {
   if (display.value === 'cut') {
     users.value = e
