@@ -98,10 +98,10 @@ export class QuickVoPlayer {
     const { debug = false } = option
     this.option.debug = debug
     this.prPlayer = new PrPlayer({ debug })
-    this.prPlayer.on.demuxer.sei = this.onSEI
     this.prPlayer.on.demuxer.chunk = (_e) => {
       // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
     }
+    this.prPlayer.on.decoder.sei = this.onSEI
   }
 
   start = async (url: string) => {
