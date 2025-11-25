@@ -19,7 +19,7 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "pr-player": "^0.2.7",
+    "pr-player": "^0.2.8",
     "pr-ws": "^0.3.3",
     "protobufjs": "^7.5.4"
   },
