@@ -1,4 +1,4 @@
-import { PrWebSocket } from 'pr-ws'
+// import { PrWebSocket } from 'pr-ws'
 import { PrPlayer } from 'pr-player'
 import * as protos from './protos/index'
 import { RoomUser } from './RoomUser'
@@ -98,19 +98,19 @@ export class QuickVoPlayer {
   }
 
   constructor(option: QuickVoPlayerOption = {}) {
-    const data = {
-      appId: 'A6B499768801E248ACA11E5F842DB6DF',
-      userId: 'web_breathe',
-      // "authId":"mobilePackageName" | "webRequestHostOrigin",
-      platform: 'web',
-      version: '1.0.1' // 连接版本号
-    }
+    // const data = {
+    //   appId: 'A6B499768801E248ACA11E5F842DB6DF',
+    //   userId: 'web_breathe',
+    //   // "authId":"mobilePackageName" | "webRequestHostOrigin",
+    //   platform: 'web',
+    //   version: '1.0.1' // 连接版本号
+    // }
 
-    const session = btoa(encodeURI(JSON.stringify(data)))
+    // const session = btoa(encodeURI(JSON.stringify(data)))
 
-    const url = `${this.option.ws}?s=${session}&t=${Date.now()}`
+    // const url = `${this.option.ws}?s=${session}&t=${Date.now()}`
 
-    let ws = new WebSocket(url)
+    // let ws = new WebSocket(url)
 
     const { debug = false } = option
     this.option.debug = debug

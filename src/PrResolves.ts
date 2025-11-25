@@ -15,7 +15,7 @@ export class PrResolves {
    * @returns
    */
   add = (eventKey: string, checkFun: Function = () => false, timeout: number = 0) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const isAdopt = checkFun()
       if (Boolean(isAdopt)) return resolve(true)
       const had = this.resolvesMap.has(eventKey)
