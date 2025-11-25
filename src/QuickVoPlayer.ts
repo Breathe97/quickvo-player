@@ -94,7 +94,8 @@ export class QuickVoPlayer {
   usersMap: Map<string, RoomUser> = new Map()
 
   on = {
-    users: (_users: any) => {}
+    users: (_users: any) => {},
+    analysis: (_e: any) => {}
   }
 
   constructor(option: QuickVoPlayerOption = {}) {
@@ -119,6 +120,7 @@ export class QuickVoPlayer {
       // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
     }
     this.prPlayer.on.decoder.sei = this.onSEI
+    this.prPlayer.on.decoder.analysis = this.on.analysis
   }
 
   start = async (url: string) => {
