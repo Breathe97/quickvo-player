@@ -1,3 +1,4 @@
+import { PrWebSocket } from 'pr-ws'
 import { PrPlayer } from 'pr-player'
 import * as protos from './protos/index'
 import { RoomUser } from './RoomUser'
@@ -69,11 +70,13 @@ interface Room {
 
 interface QuickVoPlayerOption {
   debug?: boolean
+  ws?: string
 }
 
 export class QuickVoPlayer {
   option: QuickVoPlayerOption = {
-    debug: false
+    debug: false,
+    ws: 'wss://livep2p.devplay.cc/websocket'
   }
   displayMode: 'original' | 'cut' = 'original'
 
@@ -95,6 +98,20 @@ export class QuickVoPlayer {
   }
 
   constructor(option: QuickVoPlayerOption = {}) {
+    const data = {
+      appId: 'A6B499768801E248ACA11E5F842DB6DF',
+      userId: 'web_breathe',
+      // "authId":"mobilePackageName" | "webRequestHostOrigin",
+      platform: 'web',
+      version: '1.0.1' // 连接版本号
+    }
+
+    const session = btoa(encodeURI(JSON.stringify(data)))
+
+    const url = `${this.option.ws}?s=${session}&t=${Date.now()}`
+
+    let ws = new WebSocket(url)
+
     const { debug = false } = option
     this.option.debug = debug
     this.prPlayer = new PrPlayer({ debug })
