@@ -120,7 +120,7 @@ export class QuickVoPlayer {
       // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
     }
     this.prPlayer.on.decoder.sei = this.onSEI
-    this.prPlayer.on.decoder.analysis = this.on.analysis
+    this.prPlayer.on.decoder.analysis = this.onAnalysis
   }
 
   start = async (url: string) => {
@@ -204,10 +204,36 @@ export class QuickVoPlayer {
     }
   }
 
+  setDisplayMode = (mode: 'original' | 'cut') => {
+    this.displayMode = mode
+    switch (mode) {
+      case 'original': // 原画 开启主渲染 暂停裁剪渲染
+        {
+          this.prPlayer.setPause(false)
+          const usersIns = [...this.usersMap.values()]
+          for (const userIns of usersIns) {
+            userIns.mc_video?.worker?.setPause(true)
+            userIns.ss_video?.worker?.setPause(true)
+          }
+        }
+        break
+      case 'cut': // 裁剪 暂停主渲染 开启剪切渲染
+        {
+          this.prPlayer.setPause(true)
+          const usersIns = [...this.usersMap.values()]
+          for (const userIns of usersIns) {
+            userIns.mc_video?.worker?.setPause(false)
+            userIns.ss_video?.worker?.setPause(false)
+          }
+        }
+        break
+    }
+  }
+
   /**
    * 监听SEI信息
    */
-  onSEI = (payload: Uint8Array) => {
+  private onSEI = (payload: Uint8Array) => {
     try {
       const res = parseSEI(payload)
       // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: onSEI`, res)
@@ -267,29 +293,7 @@ export class QuickVoPlayer {
     }
   }
 
-  setDisplayMode = (mode: 'original' | 'cut') => {
-    this.displayMode = mode
-    switch (mode) {
-      case 'original': // 原画 开启主渲染 暂停裁剪渲染
-        {
-          this.prPlayer.setPause(false)
-          const usersIns = [...this.usersMap.values()]
-          for (const userIns of usersIns) {
-            userIns.mc_video?.worker?.setPause(true)
-            userIns.ss_video?.worker?.setPause(true)
-          }
-        }
-        break
-      case 'cut': // 裁剪 暂停主渲染 开启剪切渲染
-        {
-          this.prPlayer.setPause(true)
-          const usersIns = [...this.usersMap.values()]
-          for (const userIns of usersIns) {
-            userIns.mc_video?.worker?.setPause(false)
-            userIns.ss_video?.worker?.setPause(false)
-          }
-        }
-        break
-    }
+  private onAnalysis = (e: any) => {
+    this.on.analysis && this.on.analysis(e)
   }
 }
