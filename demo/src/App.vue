@@ -36,12 +36,14 @@ import { QuickVoPlayer } from '../../src/index'
 // const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
 // const url = ref('https://stream.quickvo.live/stream_6307965365/1761530210242.flv?auth_key=1761616610-0-0-ab441b82d17526cd63746b6549daa6a0')
 // const url = ref('https://pull.pryun.vip/stream_5564094315/1763605928988.flv?auth_key=1763692328-0-0-c42f0978280e3d2e2eb0205fff4e0aaf')
-const url = ref('https://pull-f5.douyinliving.com/media/stream-118333372556903250.flv?arch_hrchy=s2&expire=1764229939&major_anchor_level=vip&s_anchor=1&sign=f9809ea5cf5415787273e5674a011511&t_id=037-202511201552196940FF516DA070739F59-Kht22F&unique_id=stream-118333372556903250_850_flv&volcSecret=f9809ea5cf5415787273e5674a011511&volcTime=1764229939&_session_id=033-2025112015521963962453573CA27F5E1A.1763625139639.34778&rsi=0&abr_pts=-800')
+// const url = ref('https://pull-f5.douyinliving.com/media/stream-118333372556903250.flv?arch_hrchy=s2&expire=1764229939&major_anchor_level=vip&s_anchor=1&sign=f9809ea5cf5415787273e5674a011511&t_id=037-202511201552196940FF516DA070739F59-Kht22F&unique_id=stream-118333372556903250_850_flv&volcSecret=f9809ea5cf5415787273e5674a011511&volcTime=1764229939&_session_id=033-2025112015521963962453573CA27F5E1A.1763625139639.34778&rsi=0&abr_pts=-800')
+const url = ref('https://pull.pryun.vip/stream_4627451267/1765181321088.flv?auth_key=1765267721-0-0-42a218f9857d49c973f9a0a07ce085ff')
 
 const player = new QuickVoPlayer({ debug: true })
 
 const users = ref<any>([])
 player.on.users = (e) => {
+  console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
   if (display.value === 'cut') {
     users.value = e
   }
