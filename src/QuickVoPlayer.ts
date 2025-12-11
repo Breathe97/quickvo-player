@@ -149,58 +149,57 @@ export class QuickVoPlayer {
   }
 
   checkAndCreateUser = (userId: string, info: protos.com.quick.voice.proto.UserInfo) => {
-    if (!this.usersMap.has(userId)) {
-      const userIns = new RoomUser()
-      this.usersMap.set(userId, userIns)
-      userIns.init(info)
-      if (userIns) {
-        if (userIns.mc_video) {
-          const { sx, sy, sw, sh } = userIns.mc_video
+    // 初始化用户对象
+    !this.usersMap.has(userId) && this.usersMap.set(userId, new RoomUser())
 
-          const key = `${userIns.userId}_mc_video`
+    const userIns = this.usersMap.get(userId)
+    if (!userIns) return
 
-          const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
-          userIns.mc_video.worker = worker
+    userIns.init(info)
 
-          if (this.displayMode === 'original') {
-            worker.setPause(true)
-          }
-          userIns.mc_video.stream = stream
-          userIns.mc_video.destroy = () => {
-            destroy()
-            this.prPlayer.cut.remove(key)
-            this.usersMap.delete(userIns.userId)
-          }
-        }
-        if (userIns.ss_video) {
-          const { sx, sy, sw, sh } = userIns.ss_video
-          const key = `${userIns.userId}_ss_video`
-          const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
-          userIns.ss_video.worker = worker
+    if (userIns.mc_video && userIns.mc_video.worker === undefined) {
+      const { sx, sy, sw, sh } = userIns.mc_video
 
-          if (this.displayMode === 'original') {
-            worker.setPause(true)
-          }
-          userIns.ss_video.stream = stream
-          userIns.ss_video.destroy = () => {
-            destroy()
-            this.prPlayer.cut.remove(key)
-            this.usersMap.delete(userIns.userId)
-          }
-        }
+      const key = `${userIns.userId}_mc_video`
+
+      const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
+      userIns.mc_video.worker = worker
+
+      if (this.displayMode === 'original') {
+        worker.setPause(true)
       }
-    } else {
-      const userIns = this.usersMap.get(userId)
-      userIns?.init(info)
-      // 根据当前用户持有轨道 更新渲染器
-      if (userIns?.mc_video) {
-        const { sx, sy, sw, sh } = userIns.mc_video
-        userIns?.mc_video.worker?.setCut({ sx, sy, sw, sh })
+      userIns.mc_video.stream = stream
+      userIns.mc_video.destroy = () => {
+        destroy()
+        this.prPlayer.cut.remove(key)
+        userIns.mc_video = undefined
       }
-      if (userIns?.ss_video) {
-        const { sx, sy, sw, sh } = userIns.ss_video
-        userIns?.ss_video.worker?.setCut({ sx, sy, sw, sh })
+    }
+    if (userIns.ss_video && userIns.ss_video.worker === undefined) {
+      const { sx, sy, sw, sh } = userIns.ss_video
+      const key = `${userIns.userId}_ss_video`
+      const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
+      userIns.ss_video.worker = worker
+
+      if (this.displayMode === 'original') {
+        worker.setPause(true)
       }
+      userIns.ss_video.stream = stream
+      userIns.ss_video.destroy = () => {
+        destroy()
+        this.prPlayer.cut.remove(key)
+        userIns.ss_video = undefined
+      }
+    }
+
+    // 根据当前用户持有轨道 更新渲染器
+    if (userIns?.mc_video) {
+      const { sx, sy, sw, sh } = userIns.mc_video
+      userIns?.mc_video.worker?.setCut({ sx, sy, sw, sh })
+    }
+    if (userIns?.ss_video) {
+      const { sx, sy, sw, sh } = userIns.ss_video
+      userIns?.ss_video.worker?.setCut({ sx, sy, sw, sh })
     }
   }
 
@@ -256,6 +255,7 @@ export class QuickVoPlayer {
               for (const userIns of usersIns) {
                 if (!userIds.includes(userIns.userId)) {
                   userIns?.destroy()
+                  this.usersMap.delete(userIns.userId)
                 }
               }
             }
