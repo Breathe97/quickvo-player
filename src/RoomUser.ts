@@ -3,23 +3,23 @@ import * as protos from './protos/index'
 
 interface AudioInfo {
   remove: boolean
-  isEnable: boolean
-  updateTime: number
-  isMute: boolean
-  volume: number
+  isEnable: boolean // 是否开启设备
+  updateTime: number // 更新时间
+  isMute: boolean // 是否静音
+  volume: number // 音量值
 }
 
 interface VideoInfo {
   remove: boolean
-  isEnable: boolean
-  updateTime: number
+  isEnable: boolean // 是否开启设备
+  updateTime: number // 更新时间
   isMute: boolean
   sx: number
   sy: number
   sw: number
   sh: number
   worker?: RenderWorker
-  stream?: MediaStream
+  stream?: MediaStream // 用户流
   destroy?: Function
 }
 

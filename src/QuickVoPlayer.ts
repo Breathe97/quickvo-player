@@ -127,6 +127,7 @@ export class QuickVoPlayer {
     this.stop()
     return this.prPlayer.start(url)
   }
+
   stop = () => {
     this.prPlayer.stop()
     this.usersMap = new Map()
@@ -135,9 +136,15 @@ export class QuickVoPlayer {
     this.room.updateTime = ''
     this.room.version = ''
   }
+
   setMute = (state?: boolean | undefined) => {
     this.prPlayer.setMute(state)
   }
+
+  setOutputGain = (gain: number) => {
+    this.prPlayer.audioPlayer?.prAudioStream?.setOutputGain(gain)
+  }
+
   getStream = () => {
     return this.prPlayer.getStream()
   }
