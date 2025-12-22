@@ -29,9 +29,9 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
-import { QuickVoPlayer } from 'quickvo-player'
+// import { QuickVoPlayer } from 'quickvo-player'
 // import { QuickVoPlayer } from '../../dist/index'
-// import { QuickVoPlayer } from '../../src/index'
+import { QuickVoPlayer } from '../../src/index'
 
 // const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
 // const url = ref('https://stream.quickvo.live/stream_6307965365/1761530210242.flv?auth_key=1761616610-0-0-ab441b82d17526cd63746b6549daa6a0')
