@@ -165,49 +165,39 @@ export class QuickVoPlayer {
 
     userIns.init(info)
 
-    if (userIns.mc_video && userIns.mc_video.worker === undefined) {
+    if (userIns.mc_video && userIns.mc_video.stream === undefined) {
       const { sx, sy, sw, sh } = userIns.mc_video
 
       const key = `${userIns.userId}_mc_video`
 
-      const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
-      userIns.mc_video.worker = worker
+      const stream = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
 
       if (this.displayMode === 'original') {
-        worker.setPause(true)
+        this.prPlayer.cut.setPause(key, true)
       }
       userIns.mc_video.stream = stream
-      userIns.mc_video.destroy = () => {
-        destroy()
-        this.prPlayer.cut.remove(key)
-        userIns.mc_video = undefined
-      }
     }
-    if (userIns.ss_video && userIns.ss_video.worker === undefined) {
+    if (userIns.ss_video && userIns.ss_video.stream === undefined) {
       const { sx, sy, sw, sh } = userIns.ss_video
       const key = `${userIns.userId}_ss_video`
-      const { worker, stream, destroy } = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
-      userIns.ss_video.worker = worker
+      const stream = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
 
       if (this.displayMode === 'original') {
-        worker.setPause(true)
+        this.prPlayer.cut.setPause(key, true)
       }
       userIns.ss_video.stream = stream
-      userIns.ss_video.destroy = () => {
-        destroy()
-        this.prPlayer.cut.remove(key)
-        userIns.ss_video = undefined
-      }
     }
 
     // 根据当前用户持有轨道 更新渲染器
     if (userIns?.mc_video) {
+      const key = `${userIns.userId}_mc_video`
       const { sx, sy, sw, sh } = userIns.mc_video
-      userIns?.mc_video.worker?.setCut({ sx, sy, sw, sh })
+      this.prPlayer.cut.setCut(key, { sx, sy, sw, sh })
     }
     if (userIns?.ss_video) {
+      const key = `${userIns.userId}_ss_video`
       const { sx, sy, sw, sh } = userIns.ss_video
-      userIns?.ss_video.worker?.setCut({ sx, sy, sw, sh })
+      this.prPlayer.cut.setCut(key, { sx, sy, sw, sh })
     }
   }
 
@@ -217,20 +207,20 @@ export class QuickVoPlayer {
       case 'original': // 原画 开启主渲染 暂停裁剪渲染
         {
           this.prPlayer.setPause(false)
-          const usersIns = [...this.usersMap.values()]
-          for (const userIns of usersIns) {
-            userIns.mc_video?.worker?.setPause(true)
-            userIns.ss_video?.worker?.setPause(true)
+          const ids = [...this.usersMap.keys()]
+          for (const id of ids) {
+            this.prPlayer.cut.setPause(`${id}_mc_video`, true)
+            this.prPlayer.cut.setPause(`${id}_ss_video`, true)
           }
         }
         break
       case 'cut': // 裁剪 暂停主渲染 开启剪切渲染
         {
           this.prPlayer.setPause(true)
-          const usersIns = [...this.usersMap.values()]
-          for (const userIns of usersIns) {
-            userIns.mc_video?.worker?.setPause(false)
-            userIns.ss_video?.worker?.setPause(false)
+          const ids = [...this.usersMap.keys()]
+          for (const id of ids) {
+            this.prPlayer.cut.setPause(`${id}_mc_video`, false)
+            this.prPlayer.cut.setPause(`${id}_ss_video`, false)
           }
         }
         break
@@ -258,12 +248,13 @@ export class QuickVoPlayer {
 
             // 移除不存在的用户
             {
-              const usersIns = [...this.usersMap.values()]
+              const ids = [...this.usersMap.keys()]
 
-              for (const userIns of usersIns) {
-                if (!userIds.includes(userIns.userId)) {
-                  userIns?.destroy()
-                  this.usersMap.delete(userIns.userId)
+              for (const id of ids) {
+                if (!userIds.includes(id)) {
+                  this.prPlayer.cut.remove(`${id}_mc_video`)
+                  this.prPlayer.cut.remove(`${id}_ss_video`)
+                  this.usersMap.delete(id)
                 }
               }
             }

@@ -1,4 +1,3 @@
-import { RenderWorker } from 'pr-player'
 import * as protos from './protos/index'
 
 interface AudioInfo {
@@ -18,9 +17,7 @@ interface VideoInfo {
   sy: number
   sw: number
   sh: number
-  worker?: RenderWorker
   stream?: MediaStream // 用户流
-  destroy?: Function
 }
 
 const createAudioInfo = () => {
@@ -198,9 +195,6 @@ export class RoomUser {
   }
 
   destroy = () => {
-    this.mc_video?.destroy && this.mc_video.destroy()
-    this.ss_video?.destroy && this.ss_video.destroy()
-
     this.mc_audio = undefined
     this.mc_video = undefined
     this.ss_audio = undefined
