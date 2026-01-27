@@ -99,20 +99,20 @@ export class QuickVoPlayer {
   }
 
   constructor(option: QuickVoPlayerOption = {}) {
-    const data = {
-      appId: 'A6B499768801E248ACA11E5F842DB6DF',
-      userId: 'web_breathe',
-      // "authId":"mobilePackageName" | "webRequestHostOrigin",
-      platform: 'web',
-      version: '1.0.1' // 连接版本号
-    }
+    // const data = {
+    //   appId: 'A6B499768801E248ACA11E5F842DB6DF',
+    //   userId: 'web_breathe',
+    //   // "authId":"mobilePackageName" | "webRequestHostOrigin",
+    //   platform: 'web',
+    //   version: '1.0.1' // 连接版本号
+    // }
 
-    const session = btoa(encodeURI(JSON.stringify(data)))
+    // const session = btoa(encodeURI(JSON.stringify(data)))
 
-    const url = `${this.option.ws}?s=${session}&t=${Date.now()}`
+    // const url = `${this.option.ws}?s=${session}&t=${Date.now()}`
 
-    let ws = new WebSocket(url)
-    console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: ws`, ws)
+    // let ws = new WebSocket(url)
+    // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: ws`, ws)
 
     const { debug = false } = option
     this.option.debug = debug
