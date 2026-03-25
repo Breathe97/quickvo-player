@@ -1,4 +1,4 @@
-import * as protos from './protos/index'
+import type { UserInfo } from './protos/index'
 
 interface AudioInfo {
   remove: boolean
@@ -73,7 +73,7 @@ export class RoomUser {
     return arr.join('_')
   }
 
-  init = (info: protos.com.quick.voice.proto.UserInfo) => {
+  init = (info: UserInfo) => {
     const { id, audios = [], videos = [] } = info
     this.userId = id
 
@@ -105,7 +105,7 @@ export class RoomUser {
               this.mc_audio = createAudioInfo()
             }
             this.mc_audio.remove = false
-            if (this.mc_audio.updateTime === updateTime) break // 比对更新时间戳是否完全符合 不符合则需要更新
+            if (this.mc_audio.updateTime === Number(updateTime)) break // 比对更新时间戳是否完全符合 不符合则需要更新
 
             this.mc_audio.isEnable = Boolean(isEnable)
             this.mc_audio.isMute = Boolean(isMute)
@@ -120,7 +120,7 @@ export class RoomUser {
               this.ss_audio = createAudioInfo()
             }
             this.ss_audio.remove = false
-            if (this.ss_audio.updateTime === updateTime) break // 比对更新时间戳是否完全符合 不符合则需要更新
+            if (this.ss_audio.updateTime === Number(updateTime)) break // 比对更新时间戳是否完全符合 不符合则需要更新
 
             this.ss_audio.isEnable = Boolean(isEnable)
             this.ss_audio.isMute = Boolean(isMute)
@@ -141,7 +141,7 @@ export class RoomUser {
               this.mc_video = createVideoInfo()
             }
             this.mc_video.remove = false
-            if (this.mc_video.updateTime === updateTime) break // 比对更新时间戳是否完全符合 不符合则需要更新
+            if (this.mc_video.updateTime === Number(updateTime)) break // 比对更新时间戳是否完全符合 不符合则需要更新
 
             this.mc_video.isEnable = Boolean(isEnable)
             this.mc_video.isMute = Boolean(isMute)
@@ -159,7 +159,7 @@ export class RoomUser {
               this.ss_video = createVideoInfo()
             }
             this.ss_video.remove = false
-            if (this.ss_video.updateTime === updateTime) break // 比对更新时间戳是否完全符合 不符合则需要更新
+            if (this.ss_video.updateTime === Number(updateTime)) break // 比对更新时间戳是否完全符合 不符合则需要更新
 
             this.ss_video.isEnable = Boolean(isEnable)
             this.ss_video.isMute = Boolean(isMute)

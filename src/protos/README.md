@@ -1,18 +1,11 @@
 ## 配置 protobuf
 
-### 使用 protobufjs-cli 生成
+使用 [@bufbuild/protoc-gen-es](https://www.npmjs.com/package/@bufbuild/protoc-gen-es) 与项目根目录的 `buf.gen.yaml` 从 `.proto` 生成 TypeScript（输出到 `src/protos/gen/`）。
+
+### 在仓库根目录执行
 
 ```bash
-npm i -g protobufjs-cli
-
+npm run proto:generate
 ```
 
-### 在根目录执行以下命令生成 compiled.js 和 compiled.d.ts
-
-```bash
-
-pbjs -t static-module -w es6 -o src/protos/compiled.js src/protos/modules/*.proto
-
-pbts -o src/protos/compiled.d.ts src/protos/compiled.js
-
-```
+修改 `src/protos/modules/*.proto` 后需重新执行上述命令以更新 `gen/` 下的生成文件。

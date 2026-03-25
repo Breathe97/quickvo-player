@@ -1,6 +1,12 @@
 // import { PrWebSocket } from 'pr-ws'
+import { fromBinary } from '@bufbuild/protobuf'
 import { PrPlayer } from 'pr-player'
-import * as protos from './protos/index'
+import {
+  CustomInfoSchema,
+  LayoutDataSchema,
+  SeiDataSchema,
+  type UserInfo
+} from './protos/index'
 import { RoomUser } from './RoomUser'
 
 // 解析自定义SEI信息
@@ -35,7 +41,7 @@ const parseSEI = (payload: Uint8Array) => {
     const payloadDataLength = payloadSize - 16
     const payloadData = payload.slice(index, index + payloadDataLength)
 
-    const res = protos.com.quick.voice.proto.SeiData.decode(payloadData)
+    const res = fromBinary(SeiDataSchema, payloadData)
 
     const { event = 0 } = res
     const data_remote = res.data
@@ -45,12 +51,12 @@ const parseSEI = (payload: Uint8Array) => {
     switch (event) {
       case 0: // 布局事件
         {
-          data = protos.com.quick.voice.proto.LayoutData.decode(res.data)
+          data = fromBinary(LayoutDataSchema, res.data)
         }
         break
       case 1: // 自定义数据事件
         {
-          data = protos.com.quick.voice.proto.CustomInfo.decode(res.data)
+          data = fromBinary(CustomInfoSchema, res.data)
         }
         break
     }
@@ -156,7 +162,7 @@ export class QuickVoPlayer {
     return arr.join('_')
   }
 
-  checkAndCreateUser = (userId: string, info: protos.com.quick.voice.proto.UserInfo) => {
+  checkAndCreateUser = (userId: string, info: UserInfo) => {
     // 初始化用户对象
     !this.usersMap.has(userId) && this.usersMap.set(userId, new RoomUser())
 
@@ -261,7 +267,7 @@ export class QuickVoPlayer {
 
             // 更新其余用户的信息
             for (const userId of userIds) {
-              const info = userMap[userId] as protos.com.quick.voice.proto.UserInfo
+              const info = userMap[userId] as UserInfo
               this.checkAndCreateUser(userId, info)
             }
 
