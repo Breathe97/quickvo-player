@@ -1,18 +1,19 @@
 {
   "name": "quickvo-player",
   "description": "基于web-codecs解码flv视频流并输出帧数据。",
-  "version": "0.3.6",
+  "version": "0.3.8",
   "type": "module",
   "files": [
     "dist"
   ],
   "main": "./dist/index.umd.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs"
+      "require": "./dist/index.umd.cjs",
+      "types": "./dist/src/index.d.ts"
     }
   },
   "scripts": {
@@ -21,7 +22,7 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.11.0",
-    "pr-player": "0.3.6",
+    "pr-player": "^0.4.0",
     "pr-ws": "^0.3.3"
   },
   "devDependencies": {
