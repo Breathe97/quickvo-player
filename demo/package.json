@@ -1,7 +1,7 @@
 {
   "name": "quickvo-player",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,7 @@
     "@vue/tsconfig": "^0.9.1",
     "@types/node": "^22.13.0",
     "typescript": "~5.9.0",
-    "vite": "^8.0.2",
+    "vite": "^8.0.7",
     "vue-tsc": "^3.2.6"
   }
 }
