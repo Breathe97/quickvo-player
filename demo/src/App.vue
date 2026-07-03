@@ -14,11 +14,11 @@
         <div class="title">VideoFrame</div>
         <div id="canvas-video-frame-view" style="background-color: antiquewhite"></div>
       </div> -->
-      <div v-show="display === 'original'" class="canvas-video-frame">
+      <div v-show="display === 'original' || true" class="canvas-video-frame">
         <div class="title">MediaStream</div>
         <div id="canvas-video-stream-view" style="background-color: aquamarine"></div>
       </div>
-      <div v-for="user in users" :key="user.userId" class="canvas-video-cut">
+      <div v-for="user in users" :key="`${user.userId}_mc_video`" class="canvas-video-cut">
         <div class="title">Cut: {{ user.userId }}</div>
         <div id="canvas-video-cut-view" style="background-color: dimgray">
           <video :srcObject="user.mc_video?.stream" autoplay muted style="width: 100%; height: 100%"></video>
@@ -78,6 +78,12 @@ const setDisplay = () => {
   player.setDisplayMode(display.value)
   if (display.value === 'original') {
     users.value = []
+  }
+  if (display.value === 'cut') {
+    setTimeout(() => {
+      const [user] = users.value
+      setStream(user.mc_video.stream)
+    }, 5000)
   }
 }
 </script>
