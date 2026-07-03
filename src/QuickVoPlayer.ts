@@ -216,7 +216,7 @@ export class QuickVoPlayer {
         break
       case 'cut': // 裁剪 暂停主渲染 开启剪切渲染
         {
-          // this.prPlayer.setPause(true)
+          this.prPlayer.setPause(true)
           const ids = [...this.usersMap.keys()]
           for (const id of ids) {
             this.prPlayer.cut.setPause(`${id}_mc_video`, false)
