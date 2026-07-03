@@ -21,7 +21,7 @@
       <div v-for="user in users" :key="user.userId" class="canvas-video-cut">
         <div class="title">Cut: {{ user.userId }}</div>
         <div id="canvas-video-cut-view" style="background-color: dimgray">
-          <video :srcObject="user.mc_video?.stream" autoplay style="width: 100%; height: 100%"></video>
+          <video :srcObject="user.mc_video?.stream" autoplay muted style="width: 100%; height: 100%"></video>
         </div>
       </div>
     </div>
@@ -34,7 +34,7 @@ import { ref } from 'vue'
 import { QuickVoPlayer } from '../../src/index'
 
 // const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
-const url = ref('https://pull.pryun.vip/stream_8302515170/1766544574915.flv?auth_key=1766630974-0-0-4b8281e8525a9645da18642adbdc5c8b')
+const url = ref('https://pull.pryun.vip/stream_5349489193/1783060150093.flv?auth_key=1783146550-0-0-dfca2ce5091bfaee372ed124bb32db97')
 // const url = ref('https://pull.pryun.vip/stream_5564094315/1763605928988.flv?auth_key=1763692328-0-0-c42f0978280e3d2e2eb0205fff4e0aaf')
 // const url = ref('https://pull-f5.douyinliving.com/media/stream-118333372556903250.flv?arch_hrchy=s2&expire=1764229939&major_anchor_level=vip&s_anchor=1&sign=f9809ea5cf5415787273e5674a011511&t_id=037-202511201552196940FF516DA070739F59-Kht22F&unique_id=stream-118333372556903250_850_flv&volcSecret=f9809ea5cf5415787273e5674a011511&volcTime=1764229939&_session_id=033-2025112015521963962453573CA27F5E1A.1763625139639.34778&rsi=0&abr_pts=-800')
 
@@ -52,21 +52,23 @@ const stop = () => {
   player.stop()
 }
 
+const setStream = (stream: MediaStream) => {
+  const dom = document.querySelector('#canvas-video-stream-view')
+  const view = document.createElement('video')
+  view.style.width = '100%'
+  view.style.height = '100%'
+  view.srcObject = stream
+  view.play()
+  dom?.replaceChildren(view)
+}
+
 const play = async () => {
   await player.start(url.value)
   player.setMute(false)
 
-  {
-    const stream = player.getStream()
-    if (stream) {
-      const dom = document.querySelector('#canvas-video-stream-view')
-      const view = document.createElement('video')
-      view.style.width = '100%'
-      view.style.height = '100%'
-      view.srcObject = stream
-      view.play()
-      dom?.replaceChildren(view)
-    }
+  const stream = player.getStream()
+  if (stream) {
+    setStream(stream)
   }
 }
 

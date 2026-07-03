@@ -1,12 +1,7 @@
 // import { PrWebSocket } from 'pr-ws'
 import { fromBinary } from '@bufbuild/protobuf'
 import { PrPlayer } from 'pr-player'
-import {
-  CustomInfoSchema,
-  LayoutDataSchema,
-  SeiDataSchema,
-  type UserInfo
-} from './protos/index'
+import { CustomInfoSchema, LayoutDataSchema, SeiDataSchema, type UserInfo } from './protos/index'
 import { RoomUser } from './RoomUser'
 
 // 解析自定义SEI信息
@@ -122,7 +117,7 @@ export class QuickVoPlayer {
 
     const { debug = false } = option
     this.option.debug = debug
-    this.prPlayer = new PrPlayer({ debug })
+    this.prPlayer = new PrPlayer()
     this.prPlayer.on.demuxer.chunk = (_e) => {
       // console.log('\x1b[38;2;0;151;255m%c%s\x1b[0m', 'color:#0097ff;', `------->Breathe: e`, e)
     }
@@ -130,7 +125,7 @@ export class QuickVoPlayer {
     this.prPlayer.on.decoder.analysis = this.onAnalysis
   }
 
-  start = async (url: string) => {
+  start = (url: string) => {
     this.stop()
     return this.prPlayer.start(url)
   }
