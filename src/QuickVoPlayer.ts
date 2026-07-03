@@ -167,9 +167,9 @@ export class QuickVoPlayer {
     userIns.init(info)
 
     if (userIns.mc_video && userIns.mc_video.stream === undefined) {
+      const key = `${userIns.userId}_mc_video`
       const { sx, sy, sw, sh } = userIns.mc_video
 
-      const key = `${userIns.userId}_mc_video`
       const stream = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
 
       if (this.displayMode === 'original') {
@@ -178,8 +178,8 @@ export class QuickVoPlayer {
       userIns.mc_video.stream = stream
     }
     if (userIns.ss_video && userIns.ss_video.stream === undefined) {
-      const { sx, sy, sw, sh } = userIns.ss_video
       const key = `${userIns.userId}_ss_video`
+      const { sx, sy, sw, sh } = userIns.ss_video
       const stream = this.prPlayer.cut.create(key, { sx, sy, sw, sh })
 
       if (this.displayMode === 'original') {

@@ -14,7 +14,7 @@
         <div class="title">VideoFrame</div>
         <div id="canvas-video-frame-view" style="background-color: antiquewhite"></div>
       </div> -->
-      <div v-show="display === 'original' || true" class="canvas-video-frame">
+      <div v-show="display === 'original'" class="canvas-video-frame">
         <div class="title">MediaStream</div>
         <div id="canvas-video-stream-view" style="background-color: aquamarine"></div>
       </div>
@@ -34,11 +34,15 @@ import { ref } from 'vue'
 import { QuickVoPlayer } from '../../src/index'
 
 // const url = ref('https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/xgplayer_doc_video/flv/xgplayer-demo-720p.flv')
-const url = ref('https://pull.pryun.vip/stream_5349489193/1783060150093.flv?auth_key=1783146550-0-0-dfca2ce5091bfaee372ed124bb32db97')
+const url = ref('https://pull.pryun.vip/stream_5479784697/1783066395628.flv?auth_key=1783152795-0-0-b700377f0f8ed0bb667d609a888b51e6')
 // const url = ref('https://pull.pryun.vip/stream_5564094315/1763605928988.flv?auth_key=1763692328-0-0-c42f0978280e3d2e2eb0205fff4e0aaf')
 // const url = ref('https://pull-f5.douyinliving.com/media/stream-118333372556903250.flv?arch_hrchy=s2&expire=1764229939&major_anchor_level=vip&s_anchor=1&sign=f9809ea5cf5415787273e5674a011511&t_id=037-202511201552196940FF516DA070739F59-Kht22F&unique_id=stream-118333372556903250_850_flv&volcSecret=f9809ea5cf5415787273e5674a011511&volcTime=1764229939&_session_id=033-2025112015521963962453573CA27F5E1A.1763625139639.34778&rsi=0&abr_pts=-800')
 
 const player = new QuickVoPlayer({ debug: true })
+
+player.prPlayer.on.demuxer.info = (info: any) => {
+  console.log('视频尺寸:', info.width, 'x', info.height)
+}
 
 const users = ref<any>([])
 player.on.users = (e) => {
@@ -78,12 +82,6 @@ const setDisplay = () => {
   player.setDisplayMode(display.value)
   if (display.value === 'original') {
     users.value = []
-  }
-  if (display.value === 'cut') {
-    setTimeout(() => {
-      const [user] = users.value
-      setStream(user.mc_video.stream)
-    }, 5000)
   }
 }
 </script>

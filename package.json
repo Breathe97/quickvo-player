@@ -1,7 +1,7 @@
 {
   "name": "quickvo-player",
   "description": "基于web-codecs解码flv视频流并输出帧数据。",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "files": [
     "dist"
@@ -21,13 +21,13 @@
     "proto:generate": "buf generate"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^2.11.0",
-    "pr-player": "^0.5.1",
+    "@bufbuild/protobuf": "^2.12.1",
+    "pr-player": "^0.5.3",
     "pr-ws": "^0.3.3"
   },
   "devDependencies": {
-    "@bufbuild/buf": "^1.66.1",
-    "@bufbuild/protoc-gen-es": "^2.11.0",
+    "@bufbuild/buf": "^1.71.0",
+    "@bufbuild/protoc-gen-es": "^2.12.1",
     "@types/node": "^26.1.0",
     "typescript": "~6.0.3",
     "vite": "^8.1.3",
